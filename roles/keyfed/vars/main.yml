@@ -1,0 +1,13 @@
+---
+openstack_api_versions:
+  \"identity\": 3
+
+os_env:
+  OS_AUTH_TYPE: v3password
+  OS_AUTH_URL: http://10.45.2.1:5000/v3
+  OS_USERNAME: admin
+  OS_PASSWORD: 9b7d0e1396e1df7b996b44d4f4d88da9929b6a3e 
+  OS_PROJECT_NAME: admin
+  OS_USER_DOMAIN_ID: default
+  OS_PROJECT_DOMAIN_ID: default
+  OS_IDENTITY_API_VERSION: 3
