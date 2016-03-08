@@ -90,16 +90,16 @@
            state=started
            name=firewalld
 
-- name: Open Firewall for services
-  tags:
-    - keycloak
-  firewalld: port={{ item }}
-             permanent=true
-             state=enabled
-             immediate=yes
-  with_items:
-    - 8080/tcp
-    - 9990/tcp
+#- name: Open Firewall for services
+#  tags:
+#    - keycloak
+#  firewalld: port={{ item }}
+#             permanent=true
+#             state=enabled
+#             immediate=yes
+#  with_items:
+#    - 8080/tcp
+#    - 9990/tcp
 
 - name: keycloak systemd service enable and start
   tags:
@@ -107,3 +107,20 @@
   service: name=keycloak
            enabled=yes
            state=started
+
+
+- name: set up apache proxy
+  tags:
+    - keycloak
+  copy: src=keycloak-proxy.conf 
+        dest=/etc/httpd/conf.d/keycloak-proxy.conf 
+        owner=root group=rootmode="u=rw,g=r,o=r"
+
+
+- name: TODO restart with a notify on previous task
+  tags:
+    - keycloak
+  service: name=httpd
+           enabled=yes
+           state=irestarted
+
