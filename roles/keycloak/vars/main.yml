@@ -1,7 +1,15 @@
 ---
-keycloak_version: 1.9.0.Final
+keycloak_version: 1.9.4.Final
 keycloak_dir: /var/lib/keycloak
 keycloak_archive: keycloak-{{ keycloak_version }}.tar.gz
 keycloak_url: http://downloads.jboss.org/keycloak/{{ keycloak_version }}/{{keycloak_archive }}
 keycloak_jboss_home: "{{ keycloak_dir }}/keycloak-{{ keycloak_version }}"
 keycloak_log_dir: "{{ keycloak_jboss_home }}/standalone/log"
+keycloak_config_dir: "{{ keycloak_jboss_home }}/standalone/configuration"
+keycloak_master_admin_username: admin
+keycloak_port_offset: 100
+keycloak_http_port: 8180
+keycloak_https_port: 8443
+keycloak_ajp_port: 8009
+keycloak_http_management_port: 9990
+keycloak_https_management_port: 9993

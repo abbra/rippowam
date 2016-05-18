@@ -12,10 +12,11 @@
   roles:
     - common
     - ipaserver
-    - ipsilonserver
+    - keycloak
   vars:    
     hostname: "{{ ansible_fqdn }}"
     ipa_admin_password: "{{ ipa_admin_user_password }}"
+
 
 - hosts: openstack
   sudo: yes

@@ -59,32 +59,32 @@
     - ecp
     - websso
 
-- name: Install Ipsilon for WebSSO
-  tags:
-    - ipsilon
-  shell: >
-    echo {{ ipa_admin_user_password }} | ipsilon-client-install
-    --saml
-    --saml-no-httpd
-    --saml-base /v3/auth/OS-FEDERATION/websso/saml2
-    --saml-sp /v3/auth/OS-FEDERATION/websso/saml2
-    --saml-idp-url https://ipa.{{ ipa_domain }}/idp
-    --saml-sp-logout /v3/auth/OS-FEDERATION/websso/saml2/logout
-    --saml-sp-post /v3/auth/OS-FEDERATION/websso/saml2/postResponse
-    --saml-sp-name openstackwebsso
-    --saml-auth /v3/auth/OS-FEDERATION/websso/saml2
-    --admin-user admin
-    --admin-password -
-    --port 5000
-  args:
-    creates: /etc/httpd/saml2/websso/metadata.xml
-    chdir: /etc/httpd/saml2/websso/
-  environment:
-    # NOTE(jamielennox): This is ignored for now but should be used in place of
-    # the echo above as soon as >1.0 comes out. That means can switch back to command instead of shell.
-    IPSILON_ADMIN_PASSWORD: "{{ ipa_admin_user_password }}"
-  notify:
-    - restart httpd
+#- name: Install Ipsilon for WebSSO
+#  tags:
+#    - ipsilon
+#  shell: >
+#    echo {{ ipa_admin_user_password }} | ipsilon-client-install
+#    --saml
+#    --saml-no-httpd
+#    --saml-base /v3/auth/OS-FEDERATION/websso/saml2
+#    --saml-sp /v3/auth/OS-FEDERATION/websso/saml2
+#    --saml-idp-url https://ipa.{{ ipa_domain }}/idp
+#    --saml-sp-logout /v3/auth/OS-FEDERATION/websso/saml2/logout
+#    --saml-sp-post /v3/auth/OS-FEDERATION/websso/saml2/postResponse
+#    --saml-sp-name openstackwebsso
+#    --saml-auth /v3/auth/OS-FEDERATION/websso/saml2
+#    --admin-user admin
+#    --admin-password -
+#    --port 5000
+#  args:
+#    creates: /etc/httpd/saml2/websso/metadata.xml
+#    chdir: /etc/httpd/saml2/websso/
+#  environment:
+#    # NOTE(jamielennox): This is ignored for now but should be used in place of
+#    # the echo above as soon as >1.0 comes out. That means can switch back to command instead of shell.
+#    IPSILON_ADMIN_PASSWORD: "{{ ipa_admin_user_password }}"
+#  notify:
+#    - restart httpd
 
 - name: Create metadata key/cert
   tags:

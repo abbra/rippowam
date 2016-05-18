@@ -18,6 +18,7 @@
   with_items:
     - rhel-server.repo
     - jamielennox-rippowam-updates-epel-7.repo
+    - jdennis-keycloak-httpd-client-install.repo
   when: ansible_distribution == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: upgrade all packages

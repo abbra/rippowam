@@ -1,6 +1,4 @@
 ---
-- debug: here
-
 - name: set password for cloud-user in case network is b0rked
   user: name=cloud-user password='$6$ndP/VMmA8.yDNiQI$cee4x3Qe1O5foUWdgwukRuy.Wetc9vop9o43C.PPKZS1liuFMr6Ezm.vtW8O9ruuKfJXionr7.oQ0UEeNwKdO.'
 

@@ -1,4 +1,9 @@
 ---
+- stat: path={{ keycloak_jboss_home }}
+  tags:
+    - keycloak
+  register: keycloak_installation
+
 - name: install keycloak prerequisites
   tags:
     - keycloak
@@ -27,6 +32,7 @@
     - keycloak
   get_url: url={{ keycloak_url }}
            dest={{ keycloak_dir }}
+  when: keycloak_installation.stat.exists == False
 
 - name: unpack keycloak
   tags:
@@ -34,6 +40,7 @@
   unarchive: src={{ keycloak_dir }}/{{keycloak_archive}}
              dest={{ keycloak_dir }}
              copy=no
+  when: keycloak_installation.stat.exists == False
 
 - name: keycloak log directory
   tags:
@@ -90,16 +97,18 @@
            state=started
            name=firewalld
 
-#- name: Open Firewall for services
-#  tags:
-#    - keycloak
-#  firewalld: port={{ item }}
-#             permanent=true
-#             state=enabled
-#             immediate=yes
-#  with_items:
-#    - 8080/tcp
-#    - 9990/tcp
+- name: Open Firewall for services
+  tags:
+    - keycloak
+  firewalld: port={{ item }}/tcp
+             permanent=true
+             state=enabled
+             immediate=yes
+  with_items:
+    - "{{ keycloak_http_port }}"
+    - "{{ keycloak_https_port }}"
+    - "{{ keycloak_http_management_port }}"
+    - "{{ keycloak_https_management_port }}"
 
 - name: keycloak systemd service enable and start
   tags:
@@ -109,18 +118,30 @@
            state=started
 
 
-- name: set up apache proxy
+#- name: set up apache proxy
+#  tags:
+#    - keycloak
+#  copy: src=keycloak-proxy.conf
+#        dest=/etc/httpd/conf.d/keycloak-proxy.conf
+#        owner=root group=rootmode="u=rw,g=r,o=r"
+
+
+- name: create keycloak master admin user
   tags:
     - keycloak
-  copy: src=keycloak-proxy.conf 
-        dest=/etc/httpd/conf.d/keycloak-proxy.conf 
-        owner=root group=rootmode="u=rw,g=r,o=r"
-
+  command: >
+    {{ keycloak_jboss_home }}/bin/add-user-keycloak.sh
+    -r master
+    -u {{ keycloak_master_admin_username }}
+    -p {{ keycloak_master_admin_password }}
+  register: add_user_result
+  failed_when: not ( add_user_result.rc == 0 or "already added" in add_user_result.stderr )
+  changed_when: add_user_result.rc == 0
+  notify: restart keycloak
 
 - name: TODO restart with a notify on previous task
   tags:
     - keycloak
   service: name=httpd
            enabled=yes
-           state=irestarted
-
+           state=started
