@@ -1,10 +1,10 @@
 
-- hosts: ipa
-  remote_user: "{{ cloud_user }}"
+- hosts: identity
+#  remote_user: "{{ cloud_user }}"
   tags: all
   tasks: []
 
-- hosts: ipa
+- hosts: identity
   sudo: yes
   remote_user: "{{ cloud_user }}"
   tags:
@@ -13,6 +13,6 @@
 #    - common
 #    - ipaclient
     - keycloak
-  vars:
-    hostname: "{{ ansible_fqdn }}"
-    ipa_admin_password: "{{ ipa_admin_user_password }}"
+#  vars:
+#    hostname: "{{ ansible_fqdn }}"
+#    ipa_admin_password: "{{ ipa_admin_user_password }}"

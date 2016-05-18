@@ -1,10 +1,10 @@
 
-- hosts: ipa
+- hosts: identity
   remote_user: "{{ cloud_user }}"
   tags: all
   tasks: []
 
-- hosts: ipa
+- hosts: identity
   sudo: yes
   remote_user: "{{ cloud_user }}"
   tags:
@@ -12,7 +12,7 @@
   roles:
     - common
     - ipaserver
-    - ipsilonserver
+#    - ipsilonserver
   vars:
     hostname: "{{ ansible_fqdn }}"
     ipa_admin_password: "{{ ipa_admin_user_password }}"

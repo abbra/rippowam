@@ -1,5 +1,5 @@
 ---
-keycloak_version: 1.9.0.Final
+keycloak_version: 1.9.4.Final
 keycloak_dir: /var/lib/keycloak
 keycloak_archive: keycloak-{{ keycloak_version }}.tar.gz
 keycloak_url: http://downloads.jboss.org/keycloak/{{ keycloak_version }}/{{keycloak_archive }}

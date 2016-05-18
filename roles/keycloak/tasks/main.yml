@@ -114,7 +114,7 @@
     - keycloak
   copy: src=keycloak-proxy.conf 
         dest=/etc/httpd/conf.d/keycloak-proxy.conf 
-        owner=root group=rootmode="u=rw,g=r,o=r"
+        owner=root group=root mode="u=rw,g=r,o=r"
 
 
 - name: TODO restart with a notify on previous task
@@ -122,5 +122,5 @@
     - keycloak
   service: name=httpd
            enabled=yes
-           state=irestarted
+           state=restarted
 
