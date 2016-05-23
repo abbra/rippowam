@@ -13,3 +13,5 @@ keycloak_https_port: 8443
 keycloak_ajp_port: 8009
 keycloak_http_management_port: 9990
 keycloak_https_management_port: 9993
+keycloak_master_admin_username: admim 
+keycloak_master_admin_password: "{{ ipa_admin_user_password }}"
