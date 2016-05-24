@@ -118,13 +118,13 @@
            state=started
 
 
-#- name: set up apache proxy
-#  tags:
-#    - keycloak
-#  copy: src=keycloak-proxy.conf
-#        dest=/etc/httpd/conf.d/keycloak-proxy.conf
-#        owner=root group=rootmode="u=rw,g=r,o=r"
-
+- name: set up apache proxy
+  tags:
+    - keycloak
+  copy: src=keycloak-proxy.conf
+        dest=/etc/httpd/conf.d/keycloak-proxy.conf
+        owner=root group=root mode="u=rw,g=r,o=r"
+  notify: restart httpd
 
 - name: create keycloak master admin user
   tags:

@@ -50,14 +50,14 @@
   notify:
     - restart httpd
 
-- name: SAML2 config dirs
-  tags:
-    - ipsilon
-  file: state=directory
-        path=/etc/httpd/saml2/{{ item }}
-  with_items:
-    - ecp
-    - websso
+#- name: SAML2 config dirs
+#  tags:
+#    - ipsilon
+#  file: state=directory
+#        path=/etc/httpd/saml2/{{ item }}
+#  with_items:
+#    - ecp
+#    - websso
 
 #- name: Install Ipsilon for WebSSO
 #  tags:
@@ -86,72 +86,72 @@
 #  notify:
 #    - restart httpd
 
-- name: Create metadata key/cert
-  tags:
-    - ipsilon
-  command: >
-    openssl req
-    -x509
-    -batch
-    -days 1825
-    -newkey rsa:2048
-    -nodes
-    -subj "/CN=openstack.{{ ipa_domain }}"
-    -keyout "/etc/httpd/saml2/ecp/metadata.key"
-    -out "/etc/httpd/saml2/ecp/metadata.cert"
-  args:
-    creates: /etc/httpd/saml2/ecp/metadata.key
-  notify:
-    - restart httpd
+#- name: Create metadata key/cert
+#  tags:
+#    - ipsilon
+#  command: >
+#    openssl req
+#    -x509
+#    -batch
+#    -days 1825
+#    -newkey rsa:2048
+#    -nodes
+#    -subj "/CN=openstack.{{ ipa_domain }}"
+#    -keyout "/etc/httpd/saml2/ecp/metadata.key"
+#    -out "/etc/httpd/saml2/ecp/metadata.cert"
+#  args:
+#    creates: /etc/httpd/saml2/ecp/metadata.key
+#  notify:
+#    - restart httpd
 
-- name: Copy metadata config generator
-  tags:
-    - ipsilon
-  template: src=metadata-config.py.j2
-            dest=/etc/httpd/saml2/ecp/metadata-config.py
+#- name: Copy metadata config generator
+#  tags:
+#    - ipsilon
+#  template: src=metadata-config.py.j2
+#            dest=/etc/httpd/saml2/ecp/metadata-config.py
 
-- name: Create metadata file
-  tags:
-    - ipsilon
-  shell: >
-    make_metadata.py -x `which xmlsec1` metadata-config.py > /etc/httpd/saml2/ecp/metadata.xml
-  args:
-    creates: /etc/httpd/saml2/ecp/metadata.xml
-    chdir: /etc/httpd/saml2/ecp/
-  notify:
-    - restart httpd
+#- name: Create metadata file
+#  tags:
+#    - ipsilon
+#  shell: >
+#    make_metadata.py -x `which xmlsec1` metadata-config.py > /etc/httpd/saml2/ecp/metadata.xml
+#  args:
+#    creates: /etc/httpd/saml2/ecp/metadata.xml
+#    chdir: /etc/httpd/saml2/ecp/
+#  notify:
+#    - restart httpd
 
-- name: Register ecp endpoint with ipsilon
-  tags:
-    - ipsilon
-    - test1
-  ipsilonprovider: username=admin
-                   password={{ ipa_admin_user_password }}
-                   name=openstackecp
-                   metadata=/etc/httpd/saml2/ecp/metadata.xml
-                   url=https://ipa.{{ ipa_domain }}/idp
-                   link=https://openstack.{{ ipa_domain }}:5000/v3/OS-FEDERATION/identity_providers/ipsilon/protocols/saml2/auth
+#- name: Register ecp endpoint with ipsilon
+#  tags:
+#    - ipsilon
+#    - test1
+#  ipsilonprovider: username=admin
+#                   password={{ ipa_admin_user_password }}
+#                   name=openstackecp
+#                   metadata=/etc/httpd/saml2/ecp/metadata.xml
+#                   url=https://ipa.{{ ipa_domain }}/idp
+#                   link=https://openstack.{{ ipa_domain }}:5000/v3/OS-FEDERATION/identity_providers/ipsilon/protocols/saml2/auth
 
-- name: Download IDP metadata
-  tags:
-    - ipsilon
-  get_url: url=https://ipa.{{ ipa_domain }}/idp/saml2/metadata
-           dest=/etc/httpd/saml2/idp-metadata.xml
-  notify:
-    - restart httpd
+#- name: Download IDP metadata
+#  tags:
+#    - ipsilon
+#  get_url: url=https://ipa.{{ ipa_domain }}/idp/saml2/metadata
+#           dest=/etc/httpd/saml2/idp-metadata.xml
+#  notify:
+#    - restart httpd
 
-- name: SAML2 config dirs
-  tags:
-    - ipsilon
-    - test1
-  file: state=directory
-        path=/etc/httpd/saml2/
-        owner=apache
-        mode=u=rwX,g=rX,o=
-        recurse=yes
-  with_items:
-    - ecp
-    - websso
+#- name: SAML2 config dirs
+#  tags:
+#    - ipsilon
+#    - test1
+#  file: state=directory
+#        path=/etc/httpd/saml2/
+#        owner=apache
+#        mode=u=rwX,g=rX,o=
+#        recurse=yes
+#  with_items:
+#    - ecp
+#    - websso
 
 - name: Kerberos as Login mechanism
   ini_file: dest=/etc/keystone/keystone.conf

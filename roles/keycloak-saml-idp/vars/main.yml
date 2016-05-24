@@ -2,12 +2,21 @@
 openstack_api_versions:
   \"identity\": 3
 
+
+keycloak_master_admin_username: admim 
+keycloak_master_admin_password: "{{ ipa_admin_user_password }}"
+
 os_env:
   OS_AUTH_TYPE: v3password
-  OS_AUTH_URL: https://{{ ansible_fqdn }}:5000/v3
+  OS_AUTH_URL: https://openstack.{{ ipa_domain }}:5000/v3
   OS_USERNAME: admin
-  OS_PASSWORD: password
   OS_PROJECT_NAME: admin
+  OS_PASSWORD: password
   OS_USER_DOMAIN_ID: default
   OS_PROJECT_DOMAIN_ID: default
   OS_IDENTITY_API_VERSION: 3
+  OS_NO_CACHE: True
+  OS_CLOUDNAME: overcloud
+  NOVA_VERSION: 1.1
+  COMPUTE_API_VERSION: 1.1
+  OS_USERNAME: admin

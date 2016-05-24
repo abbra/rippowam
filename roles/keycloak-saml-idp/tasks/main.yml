@@ -1,4 +1,37 @@
 ---
+- name: add COPR repo
+  copy: src={{ item }}
+        dest=/etc/yum.repos.d/{{ item }}
+  with_items:
+    - jdennis-keycloak-httpd-client-install.repo
+
+- name: install installer
+  yum: name={{ item }} state=latest
+  with_items:
+      - python2-keycloak-httpd-client-install
+
+- name: register the IdP
+  command: >
+    keycloak-httpd-client-install
+      --client-originate-method registration
+      --force
+      --mellon-https-port 5000
+      --mellon-hostname openstack.{{ ipa_domain }}
+      --mellon-root '/v3'
+      --keycloak-server-url https://ipa.{{ ipa_domain }}/
+      --keycloak-auth-role root-admin
+      --keycloak-admin-password {{ keycloak_master_admin_password }}
+      --app-name v3
+      --keycloak-realm openstack
+       --mellon-https-port 5000
+      -l "/v3/auth/OS-FEDERATION/websso/saml2"
+      -l "/v3/auth/OS-FEDERATION/identity_providers/keycloak/protocols/saml2/websso"
+      -l "/v3/OS-FEDERATION/identity_providers/keycloak/protocols/saml2/auth"
+
+
+#TODO Line in file to add  MellonIdP "IDP" to 
+
+
 - name: copy rules file
   copy: src=mapping_keycloak_saml2.json
         dest=/mapping_keycloak_saml2.json
@@ -19,7 +52,7 @@
 - name: Keycloak identity provider
   command: >
     openstack identity provider create
-    --remote-id https://keycloak.{{ ipa_domain }}/idp/saml2/metadata
+    --remote-id https://ipa.{{ ipa_domain }}/auth/saml2/metadata
     keycloak
   environment: os_env
   when: '"\"keycloak\"" not in os_idps.stdout_lines'
