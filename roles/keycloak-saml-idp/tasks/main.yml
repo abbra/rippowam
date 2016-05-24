@@ -28,9 +28,42 @@
       -l "/v3/auth/OS-FEDERATION/identity_providers/keycloak/protocols/saml2/websso"
       -l "/v3/OS-FEDERATION/identity_providers/keycloak/protocols/saml2/auth"
 
+# Note: the white space at the end of line: is important, as
+# it forces ansible to include the same line multiple times, once per stanza.
+# This setup is not foolproof, and is unstable
+- name: Set Mellon IdP 0.
+  lineinfile:
+    dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
+    line: '    MellonIdP "IDP" '
+    insertafter: <Location /v3>
+- name: Set Mellon IdP 1.
+  lineinfile:
+    dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
+    line: '    MellonIdP "IDP" '
+    insertafter: <Location /v3/auth/OS-FEDERATION/websso/saml2>
+- name: Set Mellon IdP 2.
+  lineinfile:
+    dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
+    line: '    MellonIdP "IDP"  '
+    insertafter: <Location /v3/auth/OS-FEDERATION/identity_providers/keycloak/protocols/saml2/websso>
 
-#TODO Line in file to add  MellonIdP "IDP" to 
+- name: Set Mellon IdP 3.
+  lineinfile:
+    dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
+    line: '    MellonIdP "IDP"   '
+    insertafter: <Location /v3/OS-FEDERATION/identity_providers/keycloak/protocols/saml2/auth>
 
+- name: Horizon WebSSO option.
+  lineinfile:
+    dest: /etc/openstack-dashboard/local_settings
+    line: '                  ("saml2", _("Keycloak")),'
+    insertafter: "WEBSSO_CHOICES = .*"
+
+- name: Horizon WebSSO option.
+  lineinfile:
+    dest: /etc/openstack-dashboard/local_settings
+    line: WEBSSO_INITIAL_CHOICE='saml2'
+    regexp: WEBSSO_INITIAL_CHOICE=.*
 
 - name: copy rules file
   copy: src=mapping_keycloak_saml2.json

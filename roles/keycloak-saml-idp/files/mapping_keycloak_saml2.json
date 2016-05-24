@@ -14,11 +14,10 @@
             }
         ]
     },
-
     {
         "local": [
             {
-                "groups": "{0}",
+                "groups": "demo",
                 "domain": {
                     "name": "Default"
                 }
@@ -26,8 +25,7 @@
         ],
         "remote": [
             {
-                "type": "MELLON_groups",
-                "whitelist": ["ipausers", "admins"]
+                "type": "MELLON_NAME_ID"
             }
         ]
     }
