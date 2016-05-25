@@ -18,7 +18,6 @@
 - include: keystone-sssd.yml
 #- include: keystone-ipsilon.yml
 #- include: test-encrypted-volumes.yml
-#- include: proton.yml
 
 - name: install accrc files
   sudo: no
