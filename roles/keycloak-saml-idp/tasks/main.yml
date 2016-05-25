@@ -39,18 +39,18 @@
 - name: Set Mellon IdP 1.
   lineinfile:
     dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
-    line: '    MellonIdP "IDP" '
+    line: '    MellonIdP "IDP"  '
     insertafter: <Location /v3/auth/OS-FEDERATION/websso/saml2>
 - name: Set Mellon IdP 2.
   lineinfile:
     dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
-    line: '    MellonIdP "IDP"  '
+    line: '    MellonIdP "IDP"   '
     insertafter: <Location /v3/auth/OS-FEDERATION/identity_providers/keycloak/protocols/saml2/websso>
 
 - name: Set Mellon IdP 3.
   lineinfile:
     dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
-    line: '    MellonIdP "IDP"   '
+    line: '    MellonIdP "IDP"    '
     insertafter: <Location /v3/OS-FEDERATION/identity_providers/keycloak/protocols/saml2/auth>
 
 - name: Horizon WebSSO option.
@@ -64,6 +64,9 @@
     dest: /etc/openstack-dashboard/local_settings
     line: WEBSSO_INITIAL_CHOICE='saml2'
     regexp: WEBSSO_INITIAL_CHOICE=.*
+  notify:
+    - restart apache
+
 
 - name: copy rules file
   copy: src=mapping_keycloak_saml2.json
@@ -85,7 +88,7 @@
 - name: Keycloak identity provider
   command: >
     openstack identity provider create
-    --remote-id https://ipa.{{ ipa_domain }}/auth/saml2/metadata
+    --remote-id https://ipa.{{ ipa_domain }}/auth/realms/openstack
     keycloak
   environment: os_env
   when: '"\"keycloak\"" not in os_idps.stdout_lines'

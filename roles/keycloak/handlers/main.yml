@@ -1,4 +1,6 @@
 
+- include: ../../packstack/handlers/main.yml
+
 - name: reload systemd
   sudo: yes
   command: systemctl daemon-reload
