@@ -3,7 +3,6 @@
   register: packstackrepo
   copy: src=RH7-RHOS-7.0.repo
         dest=/etc/yum.repos.d/RH7-RHOS-7.0.repo
-#- include: maria-prep.yml
 - include: ipa-pre-packstack.yml
 - include: packstack.yml
 - include: serviceauth.yml
@@ -13,13 +12,11 @@
 - include: keystone.yml
 - include: horizon.yml
 - include: ipa-post-packstack.yml
-# - include: mysql.yml
 # - include: firewall.yml
 - meta: flush_handlers
 - include: keystone-environment.yml
 - include: keystone-sssd.yml
 #- include: keystone-ipsilon.yml
-#- include: mariadb-kerberos.yml
 #- include: test-encrypted-volumes.yml
 #- include: proton.yml
 
