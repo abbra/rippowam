@@ -25,10 +25,9 @@
     - openstack
   roles:
     - common
-    - { role: staticnetwork, when: ipa_nova_join is defined }
     - ipaclient
     - packstack
-    - { role: nova-ipa, when: ipa_nova_join is defined }
+    - keycloak-saml-idp
   vars:
     hostname: "{{ ansible_fqdn }}"
     dns_search: "{{ ipa_domain }}"

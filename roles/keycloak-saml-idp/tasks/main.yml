@@ -64,9 +64,6 @@
     dest: /etc/openstack-dashboard/local_settings
     line: WEBSSO_INITIAL_CHOICE='saml2'
     regexp: WEBSSO_INITIAL_CHOICE=.*
-  notify:
-    - restart apache
-
 
 - name: copy rules file
   copy: src=mapping_keycloak_saml2.json
@@ -112,3 +109,10 @@
     saml2
   environment: os_env
   when: ' "\"saml2\"" not in os_keycloak_protocols.stdout_lines'
+
+# Many things could have (and likely did) affect changes in HTTPDs config.
+# Instead of retarting after each, just restart once.
+# It won't hurt anything, I promise.
+- name: restart httpd
+  sudo: yes
+  service: name=httpd state=restarted
