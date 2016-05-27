@@ -140,9 +140,21 @@
   changed_when: add_user_result.rc == 0
   notify: restart rhsso
 
+- name: Add class reference to MessageFactory 
+  lineinfile: dest="{{ rhsso_jboss_home }}/modules/system/layers/keycloak/org/keycloak/keycloak-services/main/module.xml" line="<module name=\"javax.xml.soap.api\"/>" insertafter="<module name=\"javax.activation.api\"/>"
+  
+
+- name: TODO restart with a notify on previous task
+  tags:
+    - rhsso
+  service: name=rhsso
+           enabled=yes
+           state=restarted
+
+
 - name: TODO restart with a notify on previous task
   tags:
     - rhsso
   service: name=httpd
            enabled=yes
-           state=started
+           state=restarted

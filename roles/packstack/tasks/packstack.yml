@@ -13,3 +13,11 @@
 - name: Run packstack
   command: "packstack --answer-file /answers.txt"
   when: answers.changed
+  ignore_errors: yes
+
+
+- name: remove ssl from ports
+  lineinfile: dest=/etc/httpd/conf/ports.conf 
+              state=absent
+              line="Listen 443"
+
