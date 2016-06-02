@@ -1,0 +1,9 @@
+
+- include: ../../packstack/handlers/main.yml
+
+- name: reload systemd
+  sudo: yes
+  command: systemctl daemon-reload
+
+- name: restart rhsso
+  service: name=rhsso enabled=yes state=restarted

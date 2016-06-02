@@ -1,0 +1,17 @@
+---
+rhsso_version: 7.0.0
+rhsso_dir: /var/lib/rhsso
+rhsso_archive: rh-sso-{{ rhsso_version }}.CR1.zip
+rhsso_url: http://download.lab.bos.redhat.com/devel/candidates/jboss/sso/JBSSO-{{ rhsso_version }}.CR1.2/{{ rhsso_archive }}
+rhsso_jboss_home: "{{ rhsso_dir }}/rh-sso-7.0"
+rhsso_log_dir: "{{ rhsso_jboss_home }}/standalone/log"
+rhsso_config_dir: "{{ rhsso_jboss_home }}/standalone/configuration"
+rhsso_master_admin_username: admin
+rhsso_port_offset: 100
+rhsso_http_port: 8180
+rhsso_https_port: 8443
+rhsso_ajp_port: 8009
+rhsso_http_management_port: 9990
+rhsso_https_management_port: 9993
+rhsso_master_admin_username: admin
+rhsso_master_admin_password: "{{ ipa_admin_user_password }}"

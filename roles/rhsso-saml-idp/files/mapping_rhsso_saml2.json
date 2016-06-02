@@ -1,0 +1,32 @@
+[
+    {
+        "local": [
+            {
+                "user": {
+                    "name": "{0}",
+                    "domain": {"name": "Default"}
+                }
+            }
+        ],
+        "remote": [
+            {
+                "type": "MELLON_NAME_ID"
+            }
+        ]
+    },
+    {
+        "local": [
+            {
+                "groups": "demo",
+                "domain": {
+                    "name": "Default"
+                }
+            }
+        ],
+        "remote": [
+            {
+                "type": "MELLON_NAME_ID"
+            }
+        ]
+    }
+]

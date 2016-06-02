@@ -1,0 +1,148 @@
+---
+- stat: path={{ rhsso_jboss_home }}
+  tags:
+    - rhsso
+  register: rhsso_installation
+
+- name: install rhsso prerequisites
+  tags:
+    - rhsso
+  yum: name={{ item }} state=present
+  with_items:
+    - java-1.8.0-openjdk.x86_64
+    - firewalld
+    - unzip
+
+- name: create rhsso user
+  tags:
+  - rhsso
+  user: name=rhsso
+
+- name: rhsso target directory
+  tags:
+  - rhsso
+  file: dest={{ rhsso_dir }}
+        mode=755
+        owner=root
+        group=root
+        state=directory
+
+
+- name: get Rhsso distribution Archive
+  tags:
+    - rhsso
+  get_url: url={{ rhsso_url }}
+           dest={{ rhsso_dir }}
+  when: rhsso_installation.stat.exists == False
+
+- name: unpack rhsso
+  tags:
+    - rhsso
+  unarchive: src={{ rhsso_dir }}/{{rhsso_archive}}
+             dest={{ rhsso_dir }}
+             copy=no
+  when: rhsso_installation.stat.exists == False
+
+- name: rhsso log directory
+  tags:
+  - rhsso
+  file: dest={{ rhsso_log_dir }}
+        mode=755
+        owner=rhsso
+        group=rhsso
+        state=directory
+
+- name: rhsso data directory
+  tags:
+  - rhsso
+  file: dest={{ rhsso_jboss_home }}/standalone/data
+        mode=755
+        owner=rhsso
+        group=rhsso
+        state=directory
+
+
+- name: rhsso tmp directory
+  tags:
+  - rhsso
+  file: dest={{ rhsso_jboss_home }}/standalone/tmp
+        mode=755
+        owner=rhsso
+        group=rhsso
+        state=directory
+
+- name: make rhsso configuration directory readable
+  tags:
+  - rhsso
+  file: dest={{ rhsso_jboss_home }}/standalone/configuration
+        mode=755
+        owner=rhsso
+        group=rhsso
+        state=directory
+        recurse=yes
+
+- name: rhsso systemd setup
+  tags:
+    - rhsso
+  template:
+       owner=root group=root mode=0644
+      src=rhsso.service.j2
+      dest=/etc/systemd/system/rhsso.service
+  notify:
+    - reload systemd
+
+- name: enable firewalld
+  tags:
+    - ipaserver
+  service: enabled=yes
+           state=started
+           name=firewalld
+
+- name: Open Firewall for services
+  tags:
+    - rhsso
+  firewalld: port={{ item }}/tcp
+             permanent=true
+             state=enabled
+             immediate=yes
+  with_items:
+    - "{{ rhsso_http_port }}"
+    - "{{ rhsso_https_port }}"
+    - "{{ rhsso_http_management_port }}"
+    - "{{ rhsso_https_management_port }}"
+
+- name: rhsso systemd service enable and start
+  tags:
+    - rhsso
+  service: name=rhsso
+           enabled=yes
+           state=started
+
+
+- name: set up apache proxy
+  tags:
+    - rhsso
+  copy: src=rhsso-proxy.conf
+        dest=/etc/httpd/conf.d/rhsso-proxy.conf
+        owner=root group=root mode="u=rw,g=r,o=r"
+  notify: restart httpd
+
+- name: create rhsso master admin user
+  tags:
+    - rhsso
+  command: >
+    {{ rhsso_jboss_home }}/bin/add-user-keycloak.sh
+    -r master
+    -u {{ rhsso_master_admin_username }}
+    -p {{ rhsso_master_admin_password }}
+  register: add_user_result
+  failed_when: not ( add_user_result.rc == 0 or "already added" in add_user_result.stderr )
+  changed_when: add_user_result.rc == 0
+  notify: restart rhsso
+
+- name: TODO restart with a notify on previous task
+  tags:
+    - rhsso
+  service: name=httpd
+           enabled=yes
+           state=started

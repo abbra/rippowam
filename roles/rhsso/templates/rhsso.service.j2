@@ -1,0 +1,15 @@
+[Unit]
+Description=Jboss Application Server
+After=network.target
+
+[Service]
+Type=idle
+Environment=JBOSS_HOME={{ rhsso_jboss_home }} JBOSS_LOG_DIR={{ rhsso_log_dir }} "JAVA_OPTS=-Xms1024m -Xmx20480m -XX:MaxPermSize=768m"
+User=rhsso
+Group=rhsso
+ExecStart={{ rhsso_jboss_home }}/bin/standalone.sh -Djboss.socket.binding.port-offset=100  -c standalone-ha.xml
+TimeoutStartSec=600
+TimeoutStopSec=600
+
+[Install]
+WantedBy=multi-user.target

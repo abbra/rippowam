@@ -1,0 +1,118 @@
+---
+- name: add COPR repo
+  copy: src={{ item }}
+        dest=/etc/yum.repos.d/{{ item }}
+  with_items:
+    - jdennis-keycloak-httpd-client-install.repo
+
+- name: install installer
+  yum: name={{ item }} state=latest
+  with_items:
+      - python2-keycloak-httpd-client-install
+
+- name: register the IdP
+  command: >
+    keycloak-httpd-client-install
+      --client-originate-method registration
+      --force
+      --mellon-https-port 5000
+      --mellon-hostname openstack.{{ ipa_domain }}
+      --mellon-root '/v3'
+      --keycloak-server-url https://ipa.{{ ipa_domain }}/
+      --keycloak-auth-role root-admin
+      --keycloak-admin-password {{ rhsso_master_admin_password }}
+      --app-name v3
+      --keycloak-realm openstack
+       --mellon-https-port 5000
+      -l "/v3/auth/OS-FEDERATION/websso/saml2"
+      -l "/v3/auth/OS-FEDERATION/identity_providers/rhsso/protocols/saml2/websso"
+      -l "/v3/OS-FEDERATION/identity_providers/rhsso/protocols/saml2/auth"
+
+# Note: the white space at the end of line: is important, as
+# it forces ansible to include the same line multiple times, once per stanza.
+# This setup is not foolproof, and is unstable
+- name: Set Mellon IdP 0.
+  lineinfile:
+    dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
+    line: '    MellonIdP "IDP" '
+    insertafter: <Location /v3>
+- name: Set Mellon IdP 1.
+  lineinfile:
+    dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
+    line: '    MellonIdP "IDP"  '
+    insertafter: <Location /v3/auth/OS-FEDERATION/websso/saml2>
+- name: Set Mellon IdP 2.
+  lineinfile:
+    dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
+    line: '    MellonIdP "IDP"   '
+    insertafter: <Location /v3/auth/OS-FEDERATION/identity_providers/rhsso/protocols/saml2/websso>
+
+- name: Set Mellon IdP 3.
+  lineinfile:
+    dest: /etc/httpd/conf.d/v3_mellon_keycloak_openstack.conf
+    line: '    MellonIdP "IDP"    '
+    insertafter: <Location /v3/OS-FEDERATION/identity_providers/rhsso/protocols/saml2/auth>
+
+- name: Horizon WebSSO option.
+  lineinfile:
+    dest: /etc/openstack-dashboard/local_settings
+    line: '                  ("saml2", _("Rhsso")),'
+    insertafter: "WEBSSO_CHOICES = .*"
+
+- name: Horizon WebSSO option.
+  lineinfile:
+    dest: /etc/openstack-dashboard/local_settings
+    line: WEBSSO_INITIAL_CHOICE='saml2'
+    regexp: WEBSSO_INITIAL_CHOICE=.*
+
+- name: copy rules file
+  copy: src=mapping_rhsso_saml2.json
+        dest=/mapping_rhsso_saml2.json
+
+- name: list idps
+  command: openstack identity provider list -c ID -f csv
+  environment: os_env
+  register: os_idps
+  changed_when: false
+
+
+- name: list mappings
+  command: openstack mapping list -c ID -f csv
+  environment: os_env
+  register: os_mappings
+  changed_when: false
+
+- name: Rhsso identity provider
+  command: >
+    openstack identity provider create
+    --remote-id https://ipa.{{ ipa_domain }}/auth/realms/openstack
+    rhsso
+  environment: os_env
+  when: '"\"rhsso\"" not in os_idps.stdout_lines'
+
+- name: create Rhsso mapping
+  command: openstack mapping create --rules /mapping_rhsso_saml2.json rhsso_mapping
+  environment: os_env
+  when: '"\"rhsso_mapping\"" not in os_mappings.stdout_lines'
+
+- name: list protocols Rhsso
+  command: openstack federation protocol list --identity-provider rhsso -c id -f csv
+  environment: os_env
+  register: os_rhsso_protocols
+  changed_when: false
+
+- name: federation protocol create
+  command: >
+    openstack federation protocol create
+    --identity-provider rhsso
+    --mapping rhsso_mapping
+    saml2
+  environment: os_env
+  when: ' "\"saml2\"" not in os_rhsso_protocols.stdout_lines'
+
+# Many things could have (and likely did) affect changes in HTTPDs config.
+# Instead of retarting after each, just restart once.
+# It won't hurt anything, I promise.
+- name: restart httpd
+  sudo: yes
+  service: name=httpd state=restarted
