@@ -33,15 +33,15 @@
     - rhsso
   get_url: url={{ rhsso_url }}
            dest={{ rhsso_dir }}
-  when: rhsso_installation.stat.exists == False
 
+# has trouble due to a path with spaces in it. Ignore unzip failure
 - name: unpack rhsso
   tags:
     - rhsso
   unarchive: src={{ rhsso_dir }}/{{rhsso_archive}}
              dest={{ rhsso_dir }}
              copy=no
-  when: rhsso_installation.stat.exists == False
+  ignore_errors: yes
 
 - name: rhsso log directory
   tags:
@@ -139,10 +139,6 @@
   failed_when: not ( add_user_result.rc == 0 or "already added" in add_user_result.stderr )
   changed_when: add_user_result.rc == 0
   notify: restart rhsso
-
-- name: Add class reference to MessageFactory 
-  lineinfile: dest="{{ rhsso_jboss_home }}/modules/system/layers/keycloak/org/keycloak/keycloak-services/main/module.xml" line="<module name=\"javax.xml.soap.api\"/>" insertafter="<module name=\"javax.activation.api\"/>"
-  
 
 - name: TODO restart with a notify on previous task
   tags:

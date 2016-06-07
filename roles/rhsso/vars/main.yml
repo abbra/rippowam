@@ -1,8 +1,8 @@
 ---
 rhsso_version: 7.0.0
 rhsso_dir: /var/lib/rhsso
-rhsso_archive: rh-sso-{{ rhsso_version }}.CR1.zip
-rhsso_url: http://download.lab.bos.redhat.com/devel/candidates/jboss/sso/JBSSO-{{ rhsso_version }}.CR1.2/{{ rhsso_archive }}
+rhsso_archive: rh-sso-{{ rhsso_version }}.CR2.zip
+rhsso_url: http://download.lab.bos.redhat.com/devel/candidates/jboss/sso/JBSSO-{{ rhsso_version }}.CR2/{{ rhsso_archive }}
 rhsso_jboss_home: "{{ rhsso_dir }}/rh-sso-7.0"
 rhsso_log_dir: "{{ rhsso_jboss_home }}/standalone/log"
 rhsso_config_dir: "{{ rhsso_jboss_home }}/standalone/configuration"
