@@ -17,9 +17,17 @@
         dest=/etc/yum.repos.d/{{ item }}
   with_items:
     - rhel-server.repo
-    - jamielennox-rippowam-updates-epel-7.repo
-    - jdennis-keycloak-httpd-client-install.repo
   when: ansible_distribution == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: Install repos
+  tags:
+    - common
+  copy: src="{{ item }}"
+        dest=/etc/yum.repos.d/{{ item }}
+  with_items:
+    - jdennis-keycloak-httpd-client-install.repo
+
+
 
 - name: upgrade all packages
   tags:
