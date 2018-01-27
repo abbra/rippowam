@@ -1,0 +1,20 @@
+- name: disable cloud init
+  file:
+    path: /etc/cloud/cloud-init.disabled
+    state: touch
+
+- lineinfile:
+    path: /etc/resolv.conf
+    state: present
+    insertafter: ^search .*
+    line: nameserver {{ item }}
+  with_items:
+      - "{{ lab_nameserver1 }}"
+      - "{{ lab_nameserver2 }}"
+
+- name: Subscribe
+  redhat_subscription:
+    state: present
+    username: "{{ redhat_user }}"
+    password: "{{ redhat_password }}"
+    pool_ids: "{{ redhat_pool_id }}"

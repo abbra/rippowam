@@ -1,0 +1,22 @@
+
+- hosts: master
+  remote_user: "{{ cloud_user }}"
+  tags: all
+  tasks: []
+
+- hosts: master, node0, node1
+  sudo: yes
+  remote_user: "{{ cloud_user }}"
+  tags: ipaclient
+  roles:
+    - subscribe
+    - ipaclient
+
+
+- hosts: master
+  sudo: yes
+  remote_user: "{{ cloud_user }}"
+  tags: oce
+  roles:
+    - oce-master
+

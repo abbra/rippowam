@@ -1,0 +1,46 @@
+---
+#- name: disable all repos
+#  tags:
+#    - oce-master
+#  shell: subscription-manager repos --disable='*'
+
+#- name: enable only OpenShift Repos
+#  tags:
+#    - oce-master
+#  shell: subscription-manager repos
+#          --enable="rhel-7-server-rpms" \
+#          --enable="rhel-7-server-extras-rpms" \
+#          --enable="rhel-7-server-ose-3.7-rpms" \
+#          --enable="rhel-7-fast-datapath-rpms"
+
+
+- name: install the prereqs
+  yum:
+    name: "{{ item }}"
+  with_items:
+    - wget
+    - git
+    - net-tools
+    - bind-utils
+    - iptables-services
+    - bridge-utils
+    - bash-completion
+    - kexec-tools
+    - sos
+    - psacct
+
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+
+
+- name: install the atomic package
+  yum:
+    name: atomic-openshift-utils
+
+
+- name: install the right docker version
+  yum:
+    name: docker-1.12.6
+
