@@ -1,0 +1,25 @@
+---
+- os_server:
+    cloud: "{{ cloudname }}"
+    state: absent
+    name: "{{ item }}.{{ clustername }}"
+  with_items: "{{ cluster_hosts  }}"
+    
+- os_router:
+    cloud: rdusalab
+    state: absent
+    name: "{{ netname }}_router"
+
+- os_subnet:
+    cloud: rdusalab
+    state: absent
+    network_name: "{{ netname }}_network"
+    name: "{{ netname }}_subnet"
+
+- os_network:
+    cloud: rdusalab
+    state: absent
+    name: "{{ netname }}_network"
+    external: false
+
+

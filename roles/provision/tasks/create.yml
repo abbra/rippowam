@@ -1,0 +1,64 @@
+---
+- name: int_network
+  os_network:
+    cloud: "{{ cloudname }}"
+    state: present
+    name: "{{ netname }}_network"
+    external: false
+  register: osnetwork
+
+- debug:
+    msg: "{{ osnetwork.network.id }}"
+
+- os_subnet:
+    cloud: "{{ cloudname }}"
+    state: present
+    network_name: "{{ netname }}_network"
+    name: "{{ netname }}_subnet"
+    cidr: 192.168.24.0/23
+    dns_nameservers:
+      - 8.8.8.7
+      - 8.8.8.8
+
+- os_router:
+    cloud: "{{ cloudname }}"
+    state: present
+    name: "{{ netname }}_router"
+    interfaces: "{{ netname }}_subnet"
+    network: public
+
+- os_security_group:
+    cloud: "{{ cloudname }}"
+    state: present
+    name: "{{ securitygroupname }}"
+    description: security group for foo servers
+
+- os_security_group_rule:
+    cloud: "{{ cloudname }}"
+    security_group: "{{ securitygroupname }}"
+    protocol: tcp
+    port_range_min: 1
+    port_range_max: 65535
+    remote_ip_prefix: 0.0.0.0/0
+
+- os_server:
+    cloud: "{{ cloudname }}"
+    state: present
+    name: "{{ item }}.{{ clustername }}"
+
+    image: rhel-guest-image-7.4-0
+    key_name: ayoung-pubkey
+    timeout: 200
+    flavor: 2
+    security_groups:
+      - "{{ securitygroupname }}"
+    nics:
+      -  net-id:  "{{ osnetwork.network.id }}"
+         net-name: "{{ netname }}_network" 
+    meta:
+      hostname: "{{ netname }}"
+  with_items: "{{ cluster_hosts }}"
+  register: osservers
+
+- debug:
+    var : osservers

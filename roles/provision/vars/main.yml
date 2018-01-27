@@ -1,0 +1,12 @@
+---
+username: ayoung
+cloudname: rdusalab
+clustername: "{{username }}.{{ cloudname }}"
+netname: "{{ username  }}-private-net"
+securitygroupname: ayoung-rdu-all-open
+
+cluster_hosts:
+  - idm
+  - master
+  - node0
+  - node1
