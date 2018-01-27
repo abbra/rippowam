@@ -4,20 +4,25 @@
     - ipaserver
   yum: name={{ item }} state=present
   with_items:
-    - bind-dyndb-ldap
     - ipa-server-dns
     - ipa-server
     - firewalld
 
-- name: ipa extra packages
-  tags:
-    - ipaserver
-  yum: name={{ item }} state=present
-  with_items:
-    - bind-pkcs11
-    - bind-pkcs11-utils
-    - ipa-server-dns
-  when: ansible_distribution == "RedHat" or ansible_distribution == "CentOS"
+
+# next two tasks are a workaround for
+# https://bugzilla.redhat.com/show_bug.cgi?id=1519206
+- name: create symlink to keep dbus happy
+  file:
+    src: /usr/libexec/dbus-1   
+    dest: /lib64/dbus-1 
+    state: link
+
+- name: restart dbus service 
+  systemd:
+    state: restarted
+    name: dbus
+
+
 
 - name: Get default DNS
   resolver:
@@ -38,16 +43,6 @@
     --forwarder {{ dns_forwarder.nameservers[0] }}
   args:
     creates: /etc/ipa/ca.crt
-
-- name: install ipa kra
-  tags:
-    - ipaserver
-  command: >
-    ipa-kra-install -U
-    -p {{ ipa_dm_password }}
-  args:
-    creates: /etc/httpd/alias/kra-agent.pem
-  when: ansible_distribution == "RedHat"
 
 - name: enable firewalld
   tags:
@@ -97,6 +92,4 @@
          dest={{ inventory_dir }}/ca.crt
          flat=yes
 
-- name: Fetch kra agent pem file
-  fetch: src=/etc/httpd/alias/kra-agent.pem dest={{ inventory_dir }}/kra-agent.pem flat=yes
  

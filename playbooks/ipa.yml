@@ -10,9 +10,9 @@
   tags:
     - ipa
   roles:
-    - common
+    - subscribe
     - ipaserver
-    - ipsilonserver
+
   vars:
     hostname: "{{ ansible_fqdn }}"
     ipa_admin_password: "{{ ipa_admin_user_password }}"
