@@ -1,0 +1,10 @@
+[all]
+{% for item in osservers.results %}
+{{ item.server.name }}
+{% endfor %}
+
+{% for item in osservers.results %}
+[{{ item.server.name }}]
+{{ item.server.name }}
+
+{% endfor %}

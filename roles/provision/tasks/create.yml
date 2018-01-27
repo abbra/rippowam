@@ -41,7 +41,8 @@
     port_range_max: 65535
     remote_ip_prefix: 0.0.0.0/0
 
-- os_server:
+- name: create servers
+  os_server:
     cloud: "{{ cloudname }}"
     state: present
     name: "{{ item }}.{{ clustername }}"
@@ -62,3 +63,7 @@
 
 - debug:
     var : osservers
+
+- template:
+    src: inventory.ini.j2
+    dest: /tmp/inventory.ini
