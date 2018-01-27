@@ -3,11 +3,23 @@
   register: packstackrepo
   command: rpm -ivh http://rhos-release.virt.bos.redhat.com/repos/rhos-release/rhos-release-latest.noarch.rpm
   ignore_errors: yes
+  when: ansible_distribution == "RedHat"
+
 
 - name: Install repos
   register: packstackrepo
   command: rhos-release 8
   ignore_errors: yes
+  when: ansible_distribution == "RedHat"
+
+- name: Install rho-release
+  register: packstackrepo
+  command: yum install -y https://repos.fedorapeople.org/repos/openstack/rdo-release.rpm
+  ignore_errors: yes
+  when: ansible_distribution == "CentOS"
+
+- name: upgrade all packages
+  yum: name=* state=latest
 
 - include: ipa-pre-packstack.yml
 - include: packstack.yml

@@ -22,8 +22,8 @@
         src=/etc/httpd/conf.modules.d/{{ item }}.conf
         dest=/etc/httpd/conf.d/{{ item }}.conf
   with_items:
-    - 10-auth_mellon
-    - 10-auth_gssapi
+#    - 10-auth_mellon
+#    - 10-auth_gssapi
     - 55-lookup_identity
   notify:
     - restart httpd
