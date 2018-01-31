@@ -1,4 +1,21 @@
 ---
+
+- os_server:
+    cloud: "{{ cloudname }}"
+    state: absent
+    name: "cfme.{{ clustername }}"
+  with_items: "{{ cluster_hosts  }}"
+
+- os_volume:
+    cloud: "{{ cloudname }}"
+    display_name: cfme_volume
+    state: absent
+ 
+- os_volume:
+    cloud: "{{ cloudname }}"
+    display_name: cfme_db_volume
+    state: absent
+
 - os_server:
     cloud: "{{ cloudname }}"
     state: absent

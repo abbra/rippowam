@@ -4,9 +4,25 @@ cloudname: rdusalab
 clustername: "{{username }}.{{ cloudname }}"
 netname: "{{ username  }}-private-net"
 securitygroupname: ayoung-rdu-all-open
+config_dir: "{{ lookup('env', 'HOME') }}/rippowam"
+cluster_dir: "{{ config_dir }}/deployments/{{ clustername }}"
+
+
+ipa_server_password: FreeIPA4All
+cloud_user: cloud-user
+ipa_admin_password: FreeIPA4All
+ipa_forwarder: 192.168.52.3
+lab_nameserver1: 8.8.8.8
+lab_nameserver2: 8.8.8.7
+lab_nameserver3: 8.8.8.8
+
+
+
 
 cluster_hosts:
   - idm
   - master
   - node0
   - node1
+
+

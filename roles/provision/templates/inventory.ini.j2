@@ -1,10 +1,58 @@
 [all]
 {% for item in osservers.results %}
-{{ item.server.name }}
+{{ item.server.interface_ip }}
 {% endfor %}
+{{ cfme_server.server.interface_ip  }}
+
 
 {% for item in osservers.results %}
 [{{ item.server.name }}]
-{{ item.server.name }}
+{{ item.server.interface_ip  }}
 
+{% endfor %}
+
+
+[ipa]
+{% for item in osservers.results %}
+{% if item.server.name.startswith('idm')  %}
+{{ item.server.interface_ip  }}
+{% endif %}
+{% endfor %}
+
+[cfme]
+{{ cfme_server.server.interface_ip  }}
+
+
+[master]
+{% for item in osservers.results %}
+{% if item.server.name.startswith('master')  %}
+{{ item.server.interface_ip  }}
+{% endif %}
+{% endfor %}
+
+[nodes]
+{% for item in osservers.results %}
+{% if item.server.name.startswith('node')  %}
+{{ item.server.interface_ip  }}
+{% endif %}
+{% endfor %}
+
+
+
+
+[all:vars]
+ipa_server_password={{ ipa_server_password }}
+ipa_domain={{ clustername }}
+deployment_dir={{ cluster_dir }}
+ipa_realm={{ clustername|upper }}
+cloud_user=cloud-user
+ipa_admin_user_password={{  ipa_admin_password }}
+ipa_forwarder={{ ipa_forwarder }}
+lab_nameserver1={{ lab_nameserver1 }}
+lab_nameserver2={{ lab_nameserver2 }}
+lab_nameserver3={{ lab_nameserver3 }}
+{% for item in osservers.results %}
+{% if item.server.name.startswith('idm')  %}
+nameserver={{ item.server.private_v4  }}
+{% endif %}
 {% endfor %}
