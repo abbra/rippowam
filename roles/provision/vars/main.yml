@@ -21,6 +21,7 @@ lab_nameserver3: 8.8.8.8
 
 cluster_hosts:
   - idm
+  - tower
   - master
   - node0
   - node1
