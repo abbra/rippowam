@@ -4,7 +4,7 @@
   tags: all
   tasks: []
 
-- hosts: master, node0, node1
+- hosts: master, nodes
   sudo: yes
   remote_user: "{{ cloud_user }}"
   tags: ipaclient
