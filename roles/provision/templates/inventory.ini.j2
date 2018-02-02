@@ -2,7 +2,6 @@
 {% for item in osservers.results %}
 {{ item.server.interface_ip }}
 {% endfor %}
-{{ cfme_server.server.interface_ip  }}
 
 
 {% for item in osservers.results %}
@@ -18,9 +17,6 @@
 {{ item.server.interface_ip  }}
 {% endif %}
 {% endfor %}
-
-[cfme]
-{{ cfme_server.server.interface_ip  }}
 
 
 [master]
