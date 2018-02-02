@@ -1,0 +1,65 @@
+---
+
+- name: create CFME volume
+  os_volume:
+    cloud: "{{ cloudname }}"
+    image: cfme-rhevm-5.9.0.15-1
+    size: 80
+    display_name: cfme_volume
+  register: cfme_volume
+
+- os_networks_facts:
+    cloud: "{{ cloudname }}"
+    name: "{{ netname }}_network"
+  register: osnetwork
+
+
+- debug:
+    var: osnetwork
+
+- name: create CFME server
+  os_server:
+    cloud: "{{ cloudname }}"
+    state: present
+    name: "cfme.{{ clustername }}"
+    key_name: ayoung-pubkey
+    timeout: 200
+    flavor: 2
+    boot_volume: "{{ cfme_volume.volume.id }}"
+    security_groups:
+      - "{{ securitygroupname }}"
+    nics:
+      -  net-id:  "{{ osnetwork.ansible_facts.openstack_networks.0.id }}"
+         net-name: "{{ netname }}_network"
+    meta:
+      hostname: "cfme.{{ clustername }}"
+  register: cfme_server
+
+- name: create CFME database volume
+  os_volume:
+    cloud: "{{ cloudname }}"
+    size: 80
+    display_name: cfme_db_volume
+  register: cfme_db_volume
+
+- name: attach db volume to CFME
+  os_server_volume:
+    cloud: "{{ cloudname }}"
+    state: present
+    server: "cfme.{{ clustername }}"
+    volume:  cfme_db_volume
+    device: /dev/vdb
+
+- lineinfile:
+    path: "{{ ssh_config_path }}"
+    line: Host "cfme.{{ clustername }}"
+
+- lineinfile:
+    path: "{{ ssh_config_path }}"
+    line:  "  Hostname {{ cfme_server.server.interface_ip  }}"
+    insertafter: "cfme.{{ clustername }}"
+
+
+- command: ssh-keygen -R  {{ cfme_server.server.interface_ip  }}
+- command: ssh-keygen -R  cfme.{{ clustername }}
+  
