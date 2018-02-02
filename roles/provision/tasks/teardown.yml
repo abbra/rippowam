@@ -40,9 +40,6 @@
   with_items: "{{ cluster_hosts  }}"
 
 
-- meta: end_play
-
-
 - os_server:
     cloud: "{{ cloudname }}"
     state: absent
