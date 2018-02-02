@@ -1,5 +1,48 @@
 ---
 
+
+- os_server_facts:
+    cloud: "{{ cloudname }}"
+    server: "{{ item }}.{{ clustername }}"
+  with_items: "{{ cluster_hosts  }}"
+  register: os_servers
+
+- debug:
+    var:  os_servers
+
+- lineinfile:
+    path: "{{ ssh_config_path }}"
+    line:  "  Hostname {{ item.ansible_facts.openstack_servers.0.interface_ip  }}"
+    state: absent
+  with_items: "{{ os_servers.results }}"
+
+
+- os_server_facts:
+    cloud: "{{ cloudname }}"
+    server: "cfme.{{ clustername }}"
+  register: cfme_server
+
+- lineinfile:
+    path: "{{ ssh_config_path }}"
+    line:  "  Hostname {{ item.interface_ip  }}"
+    state: absent
+  with_items: "{{ cfme_server.ansible_facts.openstack_servers }}"
+
+- lineinfile:
+    path: "{{ ssh_config_path }}"
+    line: Host "cfme.{{ clustername }}"
+    state: absent
+
+- lineinfile:
+    path: "{{ ssh_config_path }}"
+    line: Host "{{  item  }}.{{ clustername }}"
+    state: absent
+  with_items: "{{ cluster_hosts  }}"
+
+
+- meta: end_play
+
+
 - os_server:
     cloud: "{{ cloudname }}"
     state: absent
@@ -10,7 +53,7 @@
     cloud: "{{ cloudname }}"
     display_name: cfme_volume
     state: absent
- 
+
 - os_volume:
     cloud: "{{ cloudname }}"
     display_name: cfme_db_volume
@@ -21,7 +64,7 @@
     state: absent
     name: "{{ item }}.{{ clustername }}"
   with_items: "{{ cluster_hosts  }}"
-    
+
 - os_router:
     cloud: rdusalab
     state: absent
@@ -38,5 +81,3 @@
     state: absent
     name: "{{ netname }}_network"
     external: false
-
-

@@ -43,7 +43,6 @@
     cloud: "{{ cloudname }}"
     state: present
     name: "{{ item }}.{{ clustername }}"
-
     image: rhel-guest-image-7.4-0
     key_name: ayoung-pubkey
     timeout: 200
@@ -54,7 +53,17 @@
       -  net-id:  "{{ osnetwork.network.id }}"
          net-name: "{{ netname }}_network" 
     meta:
-      hostname: "{{ netname }}"
+      hostname: "{{ item }}.{{ clustername }}"
+      fqdn: "{{ item }}.{{ clustername }}"
+    userdata: |
+      #cloud-config
+      hostname: "{{ item }}.{{ clustername }}"
+      fqdn:  "{{ item }}.{{ clustername }}"
+      write_files:
+        -   path: /etc/sudoers.d/999-ansible-requiretty
+            permissions: 440
+      content: |
+        Defaults:{{ netname }} !requiretty
   with_items: "{{ cluster_hosts }}"
   register: osservers
 
@@ -82,7 +91,7 @@
       -  net-id:  "{{ osnetwork.network.id }}"
          net-name: "{{ netname }}_network"
     meta:
-      hostname: "{{ netname }}"
+      hostname: "cfme.{{ clustername }}"
   register: cfme_server
 
 - name: create CFME database volume
@@ -122,33 +131,33 @@
     backup: no
 
 - file:
-    path: "{{ cluster_dir }}/ssh.config"
+    path: "{{ ssh_config_path }}"
     state: touch
 
 - lineinfile:
     insertbefore: "BOF"
-    path: "{{ cluster_dir }}/ssh.config"
+    path: "{{ ssh_config_path }}"
     line: "{{ item }}"
   with_items:
     - "ControlMaster auto"
     - "ControlPath /tmp/ssh_mux_%h_%p_%rA"
 
 - lineinfile:
-    path: "{{ cluster_dir }}/ssh.config"
+    path: "{{ ssh_config_path }}"
     line: Host "{{ item.server.name }}"
   with_items: "{{ osservers.results }}"
 
 - lineinfile:
-    path: "{{ cluster_dir }}/ssh.config"
+    path: "{{ ssh_config_path }}"
     line:  "  Hostname {{ item.server.interface_ip }}"
     insertafter: '{{ item.server.name }}'
   with_items: "{{ osservers.results }}"
 
 - lineinfile:
-    path: "{{ cluster_dir }}/ssh.config"
-    line: Host  "cfme.{{ clustername }}"
+    path: "{{ ssh_config_path }}"
+    line: Host "cfme.{{ clustername }}"
 
 - lineinfile:
-    path: "{{ cluster_dir }}/ssh.config"
+    path: "{{ ssh_config_path }}"
     line:  "  Hostname {{ cfme_server.server.interface_ip  }}"
     insertafter: "cfme.{{ clustername }}"
