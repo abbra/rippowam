@@ -1,6 +1,7 @@
 ---
-username: ayoung
+username: "{{ ansible_env.USER }}"
 clustername: "{{username }}.{{ cloudname }}"
 ssh_config_path: "{{ ansible_env.HOME }}/.ssh/config"
 netname: "{{ username  }}-private-net"
-securitygroupname: ayoung-rdu-all-open
+securitygroupname: "{{username }}-rdu-all-open"
+
