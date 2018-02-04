@@ -45,23 +45,23 @@
   os_server:
     cloud: "{{ cloudname }}"
     state: present
-    name: "{{ item }}.{{ clustername }}"
+    name: "{{ item.name }}.{{ clustername }}"
     image: rhel-guest-image-7.4-0
     key_name: ayoung-pubkey
     timeout: 200
-    flavor: 2
+    flavor: "{{ item.flavor }}"
     security_groups:
       - "{{ securitygroupname }}"
     nics:
       -  net-id:  "{{ osnetwork.network.id }}"
          net-name: "{{ netname }}_network" 
     meta:
-      hostname: "{{ item }}.{{ clustername }}"
-      fqdn: "{{ item }}.{{ clustername }}"
+      hostname: "{{ item.name }}.{{ clustername }}"
+      fqdn: "{{ item.name }}.{{ clustername }}"
     userdata: |
       #cloud-config
-      hostname: "{{ item }}.{{ clustername }}"
-      fqdn:  "{{ item }}.{{ clustername }}"
+      hostname: "{{ item.name }}.{{ clustername }}"
+      fqdn:  "{{ item.name }}.{{ clustername }}"
       write_files:
         -   path: /etc/sudoers.d/999-ansible-requiretty
             permissions: 440

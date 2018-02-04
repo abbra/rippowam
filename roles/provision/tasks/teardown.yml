@@ -3,7 +3,7 @@
 
 - os_server_facts:
     cloud: "{{ cloudname }}"
-    server: "{{ item }}.{{ clustername }}"
+    server: "{{ item.name }}.{{ clustername }}"
   with_items: "{{ cluster_hosts  }}"
   register: os_servers
 
@@ -44,7 +44,6 @@
     cloud: "{{ cloudname }}"
     state: absent
     name: "cfme.{{ clustername }}"
-  with_items: "{{ cluster_hosts  }}"
 
 - os_volume:
     cloud: "{{ cloudname }}"
@@ -59,7 +58,7 @@
 - os_server:
     cloud: "{{ cloudname }}"
     state: absent
-    name: "{{ item }}.{{ clustername }}"
+    name: "{{ item.name }}.{{ clustername }}"
   with_items: "{{ cluster_hosts  }}"
 
 - os_router:
