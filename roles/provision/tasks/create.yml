@@ -119,3 +119,22 @@
 
 - command: ssh-keygen -R {{ item.server.name }}
   with_items: "{{ osservers.results }}"
+
+#TODO:  Make a dictionary of volumes and attach them using with_items
+
+- name: create openshift var volume
+  os_volume:
+    cloud: "{{ cloudname }}"
+    size: 40
+    display_name: "{{ item.volume_name }}"
+  register: openshift_var_volume
+  with_items: "{{ cluster_volumes }}"
+
+- name: attach var volume to OCE Master
+  os_server_volume:
+    cloud: "{{ cloudname }}"
+    state: present
+    server: "{{ item.server_name }}.{{ clustername }}"
+    volume:  "{{ item.volume_name }}"
+    device: /dev/vdb
+  with_items: "{{ cluster_volumes }}"

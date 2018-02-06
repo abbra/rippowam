@@ -19,7 +19,7 @@
 {% endfor %}
 
 
-[master]
+[masters]
 {% for item in osservers.results %}
 {% if item.server.name.startswith('master')  %}
 {{ item.server.interface_ip  }}

@@ -4,7 +4,7 @@
   tags: all
   tasks: []
 
-- hosts: master, nodes
+- hosts: masters, nodes
   sudo: yes
   remote_user: "{{ cloud_user }}"
   tags: ipaclient
@@ -13,7 +13,7 @@
     - ipaclient
 
 
-- hosts: master
+- hosts: masters
   sudo: yes
   remote_user: "{{ cloud_user }}"
   tags: oce

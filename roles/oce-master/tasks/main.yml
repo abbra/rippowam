@@ -44,3 +44,15 @@
   yum:
     name: docker-1.12.6
 
+- lineinfile:
+    path: /etc/sysconfig/docker-storage-setup
+    line: "{{ item }}"
+  with_items:
+    - STORAGE_DRIVER=devicemapper
+    - DEVS=vdb
+    - VG=docker-vg
+    - AUTO_EXTEND_POOL=true
+
+
+- command: docker-storage-setup
+
