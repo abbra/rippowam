@@ -1,4 +1,9 @@
 ---
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+
 - name: install ipa packages
   tags:
     - ipaserver
@@ -7,7 +12,6 @@
     - ipa-server-dns
     - ipa-server
     - firewalld
-
 
 # next two tasks are a workaround for
 # https://bugzilla.redhat.com/show_bug.cgi?id=1519206
