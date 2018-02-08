@@ -1,35 +1,36 @@
 [all]
 {% for item in osservers.results %}
-{{ item.server.interface_ip }}
-{% endfor %}
-
-
-{% for item in osservers.results %}
-[{{ item.server.name }}]
-{{ item.server.interface_ip  }}
-
+{{ item.server.name }}
 {% endfor %}
 
 
 [ipa]
 {% for item in osservers.results %}
 {% if item.server.name.startswith('idm')  %}
-{{ item.server.interface_ip  }}
+{{ item.server.name  }}
 {% endif %}
 {% endfor %}
+
+[bastion]
+{% for item in osservers.results %}
+{% if item.server.name.startswith('bastion')  %}
+{{ item.server.name  }}
+{% endif %}
+{% endfor %}
+
 
 
 [masters]
 {% for item in osservers.results %}
 {% if item.server.name.startswith('master')  %}
-{{ item.server.interface_ip  }}
+{{ item.server.name  }}
 {% endif %}
 {% endfor %}
 
 [nodes]
 {% for item in osservers.results %}
 {% if item.server.name.startswith('node')  %}
-{{ item.server.interface_ip  }}
+{{ item.server.name  }}
 {% endif %}
 {% endfor %}
 

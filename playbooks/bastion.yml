@@ -1,0 +1,14 @@
+
+- hosts: bastion
+  remote_user: "{{ cloud_user }}"
+  tags: all
+  tasks: []
+
+- hosts: bastion
+  sudo: yes
+  remote_user: "{{ cloud_user }}"
+  tags: ipaclient
+  roles:
+#    - subscribe
+#    - ipaclient
+    - bastion

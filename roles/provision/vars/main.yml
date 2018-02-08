@@ -20,6 +20,7 @@ cluster_hosts:
   - {name: node0,  flavor:  m1.medium}
   - {name: node1,  flavor:  m1.medium}
   - {name: node2,  flavor:  m1.medium}
+  - {name: bastion,  flavor:  m1.small}
 
 
 cluster_volumes:
