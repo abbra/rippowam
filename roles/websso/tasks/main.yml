@@ -1,0 +1,73 @@
+---
+
+- name: enable websso repository
+  command: subscription-manager repos --enable=rh-sso-7.2-for-rhel-7-server-rpms
+
+- name: install websso prereqs
+  tags:
+    - websso
+  yum: name={{ item }} state=present
+  with_items:
+    - java-1.8.0-openjdk.x86_64
+    - firewalld
+
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+
+- name: install websso yum group
+  tags:
+    - websso
+  yum: name="@rh-sso7" state=present
+
+- name: create symlink to keep dbus happy
+  file:
+    src: /usr/libexec/dbus-1   
+    dest: /lib64/dbus-1 
+    state: link
+
+- name: restart dbus service 
+  systemd:
+    state: restarted
+    name: dbus
+
+
+- name: enable firewalld
+  tags:
+    - websso
+  service: enabled=yes
+           state=started
+           name=firewalld
+
+- name: Open Firewall for services
+  tags:
+    - websso
+  firewalld: port={{ item }}/tcp
+             permanent=true
+             state=enabled
+             immediate=yes
+  with_items: "{{ websso_firewall_ports  }}"
+
+- name: rh_sso systemd service
+  tags:
+    - websso
+  service: name=rh-sso7
+           enabled=yes
+           state=started
+
+- name: create websso master admin user
+  tags:
+    - websso
+  command: >
+    {{ rhsso_dir }}/bin/add-user-keycloak.sh
+    -r master
+    -u {{ websso_master_admin_username }}
+    -p {{ websso_master_admin_password }}
+  register: add_user_result
+  failed_when: not ( add_user_result.rc == 0 or "already added" in add_user_result.stderr )
+  changed_when: add_user_result.rc == 0
+  notify: restart websso
+
+
+

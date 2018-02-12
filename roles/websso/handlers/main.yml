@@ -1,0 +1,7 @@
+
+- name: reload systemd
+  sudo: yes
+  command: systemctl daemon-reload
+
+- name: restart websso
+  service: name=rh-sso7 enabled=yes state=restarted

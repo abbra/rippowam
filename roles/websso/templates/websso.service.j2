@@ -1,0 +1,15 @@
+[Unit]
+Description=Jboss Application Server
+After=network.target
+
+[Service]
+Type=idle
+Environment=JBOSS_HOME={{ rhsso_dir }} JBOSS_LOG_DIR={{ websso_log_dir }} "JAVA_OPTS=-Xms1024m -Xmx20480m -XX:MaxPermSize=768m"
+User=websso
+Group=websso
+ExecStart={{ rhsso_dir }}/bin/standalone.sh -Djava.net.preferIPv4Stack=true  -c standalone-ha.xml
+TimeoutStartSec=600
+TimeoutStopSec=600
+
+[Install]
+WantedBy=multi-user.target
