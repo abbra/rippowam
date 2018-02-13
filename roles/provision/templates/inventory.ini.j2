@@ -11,6 +11,13 @@
 {% endif %}
 {% endfor %}
 
+[sso]
+{% for item in osservers.results %}
+{% if item.server.name.startswith('sso')  %}
+{{ item.server.name  }}
+{% endif %}
+{% endfor %}
+
 [bastion]
 {% for item in osservers.results %}
 {% if item.server.name.startswith('bastion')  %}
