@@ -14,6 +14,7 @@ lab_nameserver3: 8.8.8.8
 
 cluster_hosts:
   - {name: idm,    flavor:  m1.medium}
+  - {name: sso,    flavor:  m1.medium}
   - {name: master0, flavor:  m1.medium}   #this needs to be xlarge IAW OSC docs
   - {name: master1, flavor:  m1.medium}
   - {name: master2, flavor:  m1.medium}
