@@ -15,3 +15,10 @@ websso_firewall_ports:
     - "{{ websso_https_port }}"
 #    - "{{ websso_http_management_port }}"
     - "{{ websso_https_management_port }}"
+
+
+ssl_cert: /etc/pki/tls/certs/rhsso-cert.pem
+ssl_key: /etc/pki/tls/private/rhsso-key.pem 
+remote_hostname: sso@"{{ ipa_realm | lower }}"
+websso_pkcs12: /etc/pki/tls/rhsso.p12
+websso_keystore: /etc/opt/rh/rh-sso7/keycloak/standalone/keycloak.jks

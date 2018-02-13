@@ -10,6 +10,9 @@
   with_items:
     - java-1.8.0-openjdk.x86_64
     - firewalld
+    - ipa-admintools
+    - openldap-clients
+    - openssl
 
 - name: upgrade all packages
   yum:
@@ -32,22 +35,34 @@
     state: restarted
     name: dbus
 
+- name: kinit
+  shell: klist &>/dev/null || echo {{ ipa_admin_password }} | kinit admin@{{ ipa_realm }}
+  changed_when: false
 
-- name: enable firewalld
-  tags:
-    - websso
-  service: enabled=yes
-           state=started
-           name=firewalld
+- name: Add service principals
+  ipaservice: principal="RHSSO/sso.{{ ipa_realm | lower }}@{{ ipa_realm }}"
 
-- name: Open Firewall for services
-  tags:
-    - websso
-  firewalld: port={{ item }}/tcp
-             permanent=true
-             state=enabled
-             immediate=yes
-  with_items: "{{ websso_firewall_ports  }}"
+- name: Get HTTP certificate
+  command: >
+    ipa-getcert request -w
+    -f {{ ssl_cert }}
+    -k {{ ssl_key }}
+    -D sso."{{ ipa_realm | lower }}"
+    -K RHSSO/sso."{{ ipa_realm | lower }}"
+  args:
+    creates: "{{ ssl_cert }}"
+  notify:
+    - restart websso
+
+#TODO add a variable based on the above check to avoid calling
+- command: openssl pkcs12 -export -name rhsso -passout pass:{{ ipa_admin_user_password }} -in {{ ssl_cert }} -inkey {{ ssl_key }} -out {{ websso_pkcs12 }}
+  when: true
+
+- command: keytool -importkeystore -srckeystore  {{ websso_pkcs12 }} -srcstoretype PKCS12 -srcstorepass {{ ipa_admin_user_password }} -destkeystore {{ websso_keystore }} -deststorepass {{ ipa_admin_user_password }} -alias rhsso
+  when: true
+
+- command: keytool -keystore {{ websso_keystore }} -import -file /etc/ipa/ca.crt -alias ipa-ca
+  when: true
 
 - name: rh_sso systemd service
   tags:
@@ -71,3 +86,18 @@
 
 
 
+- name: enable firewalld
+  tags:
+    - websso
+  service: enabled=yes
+           state=started
+           name=firewalld
+
+- name: Open Firewall for services
+  tags:
+    - websso
+  firewalld: port={{ item }}/tcp
+             permanent=true
+             state=enabled
+             immediate=yes
+  with_items: "{{ websso_firewall_ports  }}"
