@@ -1,0 +1,243 @@
+#!/bin/env python
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+#!/usr/bin/python
+
+ANSIBLE_METADATA = {
+    'metadata_version': '1.1',
+    'status': ['preview'],
+    'supported_by': 'community'
+}
+
+DOCUMENTATION = '''
+---
+module: getcert
+
+short_description: X509 certificate tracking using getcert and certmonger
+
+version_added: "2.4"
+
+description:
+    - "The certmonger daemon monitors certificates for impending
+       expiration, and can optionally refresh soon-to-be-expired certificates
+with the help of a CA. If told to, it can drive the entire enrollment
+process from key generation through enrollment and refresh.
+
+
+It can work with either flat files, like those used by OpenSSL, or
+with NSS databases.
+
+The certmonger command-line too, getcert is a very generic tool that can manage the certificates you are tracking."
+
+options:
+    name:
+        description:
+            - This is the message to send to the sample module
+        required: true
+    new:
+        description:
+            - Control to demo if the result of this module is changed or not
+        required: false
+
+
+author:
+    - Adam Young (@ayoung)
+'''
+
+EXAMPLES = '''
+# Pass in a message
+- name: Test with a message
+  my_new_test_module:
+    name: hello world
+
+# pass in a message and have changed true
+- name: Test with a message and changed output
+  my_new_test_module:
+    name: hello world
+    new: true
+
+# fail the module
+- name: Test failure of the module
+  my_new_test_module:
+    name: fail me
+'''
+
+RETURN = '''
+original_message:
+    description: The original name param that was passed in
+    type: str
+message:
+    description: The output message that the sample module generates
+'''
+from subprocess import PIPE, STDOUT
+from ansible.module_utils.basic import AnsibleModule
+import exceptions
+import random
+import subprocess
+import uuid
+import os
+import grp
+
+def chgrp(filepath, group):
+    group = grp.getgrnam(group)
+    uid = os.stat(filepath).st_uid
+    os.chown(filepath, uid, group.gr_gid)
+
+def _check_database(location, pinfile):
+    cmd = '/bin/certutil -f %s  -L -d %s' % (pinfile, location)
+    try:
+        subprocess.check_call(cmd, shell=True, stdout=None, stderr=None,)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+    except exceptions.OSError:
+        return False
+
+def _make_database(location, pinfile, db_group):
+
+    db_files = ['cert8.db', 'key3.db', 'secmod.db']
+    
+    pin = uuid.uuid4().hex
+    pindir = os.path.dirname(pinfile)
+    try:
+        os.makedirs(pindir)
+    except exceptions.OSError, ose:
+        if ose.errno == 17:
+            pass
+        else:
+            raise
+    with open(pinfile, 'w') as f:
+        f.write(pin)
+    
+    mode = 0770
+
+    try:
+        os.makedirs(location, mode)
+    except exceptions.OSError, ose:
+        if ose.errno == 17:
+            pass
+        else:
+            raise        
+    os.chmod(location, mode)
+    cmd = '/bin/certutil -f %s  -N -d %s' % (pinfile, location)
+    p = subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
+
+    os.chmod(location, mode)
+    for f in db_files:
+        chgrp("%s/%s" % (location, f), db_group)
+        os.chmod("%s/%s" % (location, f), mode)
+
+    try:
+        cmd = 'semanage fcontext -a -t cert_t "%s(/.*)?"' % location
+        p = subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
+    except ValueError:
+        pass
+
+    cmd = 'restorecon -FvvR %s' % location
+    p = subprocess.call(cmd, shell=True, stdout=None, stderr=None)
+
+def _check_cert(location, nickname):
+
+    cmd = '/bin/getcert list -c IPA  -d %s -n %s' % (location, nickname)
+    p = subprocess.Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+
+    # If the Database file does not exist.
+    if p.returncode != 0:
+        return
+        
+    found = False
+    
+    for line in p.stdout:
+        found = True
+        fields = line.strip().split(':')
+        try:
+            if fields[0] == 'subject':
+                print(fields[1].strip())
+        except:       
+            print ('err')
+    return found
+
+def run_module():
+    # define the available arguments/parameters that a user can pass to
+    # the module
+    module_args = dict(
+        name=dict(type='str', required=True),
+        remove=dict(type='bool', required=False, default=False),
+        location=dict(type='str', required=True),
+        nickname=dict(type='str', required=True),
+        token=dict(type='str', required=False),
+        pinfile=dict(type='str', required=False),
+        kerberos_principal=dict(type='str', required=False),
+        subject_name=dict(type='str', required=False),
+        bits=dict(type='int', required=False),
+    )
+
+    # seed the result dict in the object
+    # we primarily care about changed and state
+    # change is if this module effectively modified the target
+    # state will include any data that you want your module to pass back
+    # for consumption, for example, in a subsequent task
+    result = dict(
+        changed=False,
+        original_message='',
+        message=''
+    )
+
+    # the AnsibleModule object will be our abstraction working with Ansible
+    # this includes instantiation, a couple of common attr would be the
+    # args/params passed to the execution, as well as if the module
+    # supports check mode
+    module = AnsibleModule(
+        argument_spec=module_args,
+        supports_check_mode=True
+    )
+
+    location = module.params['location']
+    nickname = module.params['nickname']
+    pinfile = module.params['pinfile']
+    db_group = 'apache'
+    found = _check_cert(location, nickname)
+    
+    # if the user is working with this module in only check mode we do not
+    # want to make any changes to the environment, just return the current
+    # state with no modifications
+    if module.check_mode:
+        return result
+
+    if found:
+        result['message'] ='Subject Cert already tracked'
+        module.exit_json(**result)
+        return
+    result['message'] ='Subject Cert  not yet tracked'
+
+    if not _check_database(location, pinfile):
+        _make_database(location, pinfile, db_group)
+        
+        
+    
+        
+    # ipa-getcert request -d /etc/httpd/nssdb -n Server-Cert -K HTTP/`hostname` -N CN=`hostname`,O=EXAMPLE.COM -g 2048 -p /etc/httpd/nssdb/pwdfile.txt
+
+    # ipa-getcert list -d /etc/httpd/nssdb/ -n Server-Cert
+
+    
+    # in the event of a successful module execution, you will want to
+    # simple AnsibleModule.exit_json(), passing the key/value results
+    module.exit_json(**result)
+
+def main():
+    run_module()
+
+if __name__ == '__main__':
+    main()
