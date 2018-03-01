@@ -43,11 +43,15 @@
 - name: Add service principals
   ipaservice: principal="HTTP/sso.{{ ipa_realm | lower }}@{{ ipa_realm }}"
 
-
-
-- name: check if certmonger is tracking HTTP certificate
-  command:
-
+- name: HTTPS certificate
+  getcert:
+    location: /etc/httpd/alias
+    nickname: Server-Cert    
+    token: NSS Certificate DB
+    pinfile: /etc/httpd/alias/pwdfile.txt
+    kerberos_principal: "HTTP/sso.{{ ipa_realm | lower }}"
+    bits: 2048
+    ca: IPA
 
 
 #HTTPD as reverse proxy
