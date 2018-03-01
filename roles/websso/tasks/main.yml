@@ -13,6 +13,7 @@
     - ipa-admintools
     - openldap-clients
     - openssl
+    - httpd
 
 - name: upgrade all packages
   yum:
@@ -26,11 +27,11 @@
 
 - name: create symlink to keep dbus happy
   file:
-    src: /usr/libexec/dbus-1   
-    dest: /lib64/dbus-1 
+    src: /usr/libexec/dbus-1
+    dest: /lib64/dbus-1
     state: link
 
-- name: restart dbus service 
+- name: restart dbus service
   systemd:
     state: restarted
     name: dbus
@@ -40,36 +41,33 @@
   changed_when: false
 
 - name: Add service principals
-  ipaservice: principal="RHSSO/sso.{{ ipa_realm | lower }}@{{ ipa_realm }}"
+  ipaservice: principal="HTTP/sso.{{ ipa_realm | lower }}@{{ ipa_realm }}"
 
-- name: Get HTTP certificate
-  command: >
-    ipa-getcert request -w
-    -f {{ ssl_cert }}
-    -k {{ ssl_key }}
-    -D sso."{{ ipa_realm | lower }}"
-    -K RHSSO/sso."{{ ipa_realm | lower }}"
-  args:
-    creates: "{{ ssl_cert }}"
-  notify:
-    - restart websso
 
-#TODO add a variable based on the above check to avoid calling
-- command: openssl pkcs12 -export -name rhsso -passout pass:{{ ipa_admin_user_password }} -in {{ ssl_cert }} -inkey {{ ssl_key }} -out {{ websso_pkcs12 }}
-  when: true
 
-- command: keytool -importkeystore -srckeystore  {{ websso_pkcs12 }} -srcstoretype PKCS12 -srcstorepass {{ ipa_admin_user_password }} -destkeystore {{ websso_keystore }} -deststorepass {{ ipa_admin_user_password }} -alias rhsso
-  when: true
+- name: check if certmonger is tracking HTTP certificate
+  command:
 
-- command: keytool -keystore {{ websso_keystore }} -import -file /etc/ipa/ca.crt -alias ipa-ca
-  when: true
 
-- name: rh_sso systemd service
+
+#HTTPD as reverse proxy
+
+- name: set up apache proxy
+  tags:
+    - keycloak
+  copy: src=websso-proxy.conf
+        dest=/etc/httpd/conf.d/websso-proxy.conf
+        owner=root group=root mode="u=rw,g=r,o=r"
+
+- name: rh_sso systemd services
   tags:
     - websso
-  service: name=rh-sso7
+  service: name={{ item }}
            enabled=yes
            state=started
+  with_items:
+     - httpd
+     - rh-sso7
 
 - name: create websso master admin user
   tags:
@@ -83,8 +81,6 @@
   failed_when: not ( add_user_result.rc == 0 or "already added" in add_user_result.stderr )
   changed_when: add_user_result.rc == 0
   notify: restart websso
-
-
 
 - name: enable firewalld
   tags:
@@ -101,3 +97,20 @@
              state=enabled
              immediate=yes
   with_items: "{{ websso_firewall_ports  }}"
+
+
+- name: enable bind address
+  lineinfile:
+    dest: /etc/opt/rh/rh-sso7/keycloak/rh-sso7.conf
+    line: WILDFLY_BIND="0.0.0.0"
+    insertafter: ^#WILDFLY_BIND=0.0.0.0$
+  notify:
+     - restart websso
+
+- name: realm in standalone.xml
+  xml:
+    path: /etc/opt/rh/rh-sso7/keycloak/standalone/standalone.xml
+    xpath: /t:server/management/security-realms
+    namespaces:
+      t: urn:jboss:domain:5.0
+    state: present

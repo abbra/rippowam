@@ -2,8 +2,8 @@
 rhsso_dir: /opt/rh/rh-sso7/root/usr/share/keycloak
 
 websso_master_admin_username: admin
-websso_http_port: 8080
-websso_https_port: 8443
+websso_http_port: 80
+websso_https_port: 443
 websso_http_management_port: 9990
 websso_https_management_port: 9993
 websso_master_admin_username: admin
@@ -11,9 +11,9 @@ websso_master_admin_password: "{{ ipa_admin_user_password }}"
 
 
 websso_firewall_ports:
-#    - "{{ websso_http_port }}"
+    - "{{ websso_http_port }}"
     - "{{ websso_https_port }}"
-#    - "{{ websso_http_management_port }}"
+    - "{{ websso_http_management_port }}"
     - "{{ websso_https_management_port }}"
 
 

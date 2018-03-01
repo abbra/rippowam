@@ -3,17 +3,13 @@
 ==========
 
 Rippowam is an ansible playbook for setting up flavors of OpenStack on top of
-RPM based Operating systems.  The current focus is on the RHEL-OSP7 release
-and RHEL 7.2 Base Operating system.
+RPM based Operating systems.  The current focus is on the RHEL-OSP12 release
+and RHEL 7.3 Base Operating system.
 
-Rippowam has a sister project, called Ossipee_ that creates the network and
-virtual machines necessary for installing and demonstrating Rippowam.
 
-.. _Ossipee: https://github.com/admiyo/ossipee/
-
-Ossipee create an inventory file used to populate the initial variables and
+Rippowam creates an inventory file used to populate the initial variables and
 host entries to run Rippowam.  An Example of the inventory file is at the
-bottom of this document.  Ossipee use e $USER as the default name for
+bottom of this document.  Ossipee uses $USER as the default name for
 the deployment, and many things make use of the name, such as the
 hostname and Kerberos Realm. You will see the strings yourname and
 YOURNAME in this document that are generated from the name.
@@ -21,9 +17,22 @@ YOURNAME in this document that are generated from the name.
 Running
 =======
 
-To run Rippowam:
+Because Rippowam needs OpenStack credentials to provision the systems, you
+should manage the clouds.yaml file locally.
 
-  ansible-playbook -i ~/.ossipee/deployments/yourname/inventory.ini  ~/devel/rippowam/site.yml
+
+
+To run Rippowam to provision:
+  cd $YOURPATH/rippowam
+
+  ansible-playbook playbooks/provision.yml
+  ansible-playbook   -e @$HOME/vault.yml   playbooks/provision.yml
+
+
+  ansible-playbook -i ~/rippowam/deployments/yourname/inventory.ini  ~/devel/rippowam/site.yml
+
+
+ansible-playbook -i ~/rippowam/deployments/ayoung.rdusalab/inventory.ini  -e @/home/ayoung/vault.yml  --start-at-task "realm in standalone.xml"   playbooks/websso.yml
 
 
 Once the playbook completes, you should have a working IPA server and
