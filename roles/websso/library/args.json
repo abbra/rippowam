@@ -1,6 +1,5 @@
 {
     "ANSIBLE_MODULE_ARGS": {
-        "name": "test serlf signed",
         "location": "/tmp/etc/dirsrv/slapd-TEST",
         "nickname": "Server-Cert",
         "token": "NSS Certificate DB",
@@ -8,6 +7,7 @@
         "kerberos_principal": "HTTP/ayoung541.test",
         "subject_name": "CN=ayoung541.test,O=TEST",
         "bits": 2048,
-        "ca": "SelfSign"
+        "ca": "SelfSign",
+        "db_group": "apache"
     }
 }

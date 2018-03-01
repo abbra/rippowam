@@ -177,7 +177,7 @@ def run_module():
     # define the available arguments/parameters that a user can pass to
     # the module
     module_args = dict(
-        name=dict(type='str', required=False),
+        db_group=dict(type='str', required=False),
         ca=dict(type='str', required=True),
         remove=dict(type='bool', required=False, default=False),
         location=dict(type='str', required=True),
@@ -210,9 +210,7 @@ def run_module():
     )
 
     remove = module.params['remove']
-    location = module.params['location']
-    nickname = module.params['nickname']
-    db_group = 'apache'
+    db_group =  module.params.get('db_group', 'apache')
 
     if remove:
         try:
