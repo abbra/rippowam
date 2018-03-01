@@ -94,8 +94,8 @@ def chgrp(filepath, group):
     uid = os.stat(filepath).st_uid
     os.chown(filepath, uid, group.gr_gid)
 
-def _check_database(location, pinfile):
-    cmd = '/bin/certutil -f %s  -L -d %s' % (pinfile, location)
+def _check_database(module):
+    cmd = '/bin/certutil -f %(pinfile)s  -L -d %(location)s' % module.params
     try:
         subprocess.check_call(cmd, shell=True, stdout=None, stderr=None,)
         return True
@@ -104,10 +104,13 @@ def _check_database(location, pinfile):
     except exceptions.OSError:
         return False
 
-def _make_database(location, pinfile, db_group):
+def _make_database(module, db_group):
+
+    pinfile = module.params['pinfile']
+    location = module.params['location']
 
     db_files = ['cert8.db', 'key3.db', 'secmod.db']
-    
+
     pin = uuid.uuid4().hex
     pindir = os.path.dirname(pinfile)
     try:
@@ -119,7 +122,7 @@ def _make_database(location, pinfile, db_group):
             raise
     with open(pinfile, 'w') as f:
         f.write(pin)
-    
+
     mode = 0770
 
     try:
@@ -128,9 +131,9 @@ def _make_database(location, pinfile, db_group):
         if ose.errno == 17:
             pass
         else:
-            raise        
+            raise
     os.chmod(location, mode)
-    cmd = '/bin/certutil -f %s  -N -d %s' % (pinfile, location)
+    cmd = '/bin/certutil -f %(pinfile)s  -N -d %(location)s' % module.params
     p = subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
 
     os.chmod(location, mode)
@@ -139,32 +142,34 @@ def _make_database(location, pinfile, db_group):
         os.chmod("%s/%s" % (location, f), mode)
 
     try:
-        cmd = 'semanage fcontext -a -t cert_t "%s(/.*)?"' % location
+        cmd = ('semanage fcontext -a -t cert_t "%(location)s(/.*)?"'
+               % module.params)
         p = subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
     except ValueError:
         pass
 
-    cmd = 'restorecon -FvvR %s' % location
+    cmd = 'restorecon -FvvR %(location)s' % module.params
     p = subprocess.call(cmd, shell=True, stdout=None, stderr=None)
 
-def _check_cert(location, nickname):
+def _check_cert(module):
 
-    cmd = '/bin/getcert list -c IPA  -d %s -n %s' % (location, nickname)
+    cmd = ('/bin/getcert list -c IPA  -d %(location)s -n %(nickname)s' %
+           module.params)
     p = subprocess.Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
 
     # If the Database file does not exist.
     if p.returncode != 0:
         return
-        
+
     found = False
-    
+
     for line in p.stdout:
         found = True
         fields = line.strip().split(':')
         try:
             if fields[0] == 'subject':
                 print(fields[1].strip())
-        except:       
+        except:
             print ('err')
     return found
 
@@ -172,7 +177,7 @@ def run_module():
     # define the available arguments/parameters that a user can pass to
     # the module
     module_args = dict(
-        name=dict(type='str', required=True),
+        name=dict(type='str', required=False),
         ca=dict(type='str', required=True),
         remove=dict(type='bool', required=False, default=False),
         location=dict(type='str', required=True),
@@ -207,7 +212,6 @@ def run_module():
     remove = module.params['remove']
     location = module.params['location']
     nickname = module.params['nickname']
-    pinfile = module.params['pinfile']
     db_group = 'apache'
 
     if remove:
@@ -215,16 +219,15 @@ def run_module():
             cmd = ("getcert stop-tracking  -d %(location)s -n %(nickname)s"
                    % module.params)
             subprocess.check_call(cmd, shell=True, stdout=None, stderr=None,)
-            
-            result['message'] ='Cert  no longer tracked'                  
+
+            result['message'] ='Cert  no longer tracked'
             module.exit_json(**result)
         except subprocess.CalledProcessError:
-            result['message'] ='Cert was not tracked'                  
+            result['message'] ='Cert was not tracked'
         return
-        
 
-    found = _check_cert(location, nickname)
-    
+    found = _check_cert(module)
+
     # if the user is working with this module in only check mode we do not
     # want to make any changes to the environment, just return the current
     # state with no modifications
@@ -232,7 +235,7 @@ def run_module():
         return result
 
     if found:
-        result['message'] ='Subject Cert already tracked'                  
+        result['message'] ='Subject Cert already tracked'
         module.exit_json(**result)
         return
 
@@ -241,18 +244,16 @@ def run_module():
         module.exit_json(**result)
         return
 
-    
+
     result['message'] ='Subject Cert  not yet tracked'
 
-    if not _check_database(location, pinfile):
-        _make_database(location, pinfile, db_group)
-        
+    if not _check_database(module):
+        _make_database(module, db_group)
+
 
     cmd = "getcert request -c %(ca)s -d %(location)s -n %(nickname)s -K HTTP/`hostname` -N CN=`hostname`,O=EXAMPLE.COM -g 2048 -p %(pinfile)s" % module.params
 
     subprocess.check_call(cmd, shell=True, stdout=None, stderr=None,)
-    
-            
 
     # ipa-getcert list -d /etc/httpd/nssdb/ -n Server-Cert
     # in the event of a successful module execution, you will want to
