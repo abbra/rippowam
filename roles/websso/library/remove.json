@@ -8,6 +8,7 @@
         "kerberos_principal": "HTTP/ayoung541.test",
         "subject_name": "CN=ayoung541.test,O=TEST",
         "bits": 2048,
-        "ca": "SelfSign"
+        "ca": "SelfSign",
+        "remove": true
     }
 }

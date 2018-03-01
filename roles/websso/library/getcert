@@ -173,6 +173,7 @@ def run_module():
     # the module
     module_args = dict(
         name=dict(type='str', required=True),
+        ca=dict(type='str', required=True),
         remove=dict(type='bool', required=False, default=False),
         location=dict(type='str', required=True),
         nickname=dict(type='str', required=True),
@@ -203,10 +204,25 @@ def run_module():
         supports_check_mode=True
     )
 
+    remove = module.params['remove']
     location = module.params['location']
     nickname = module.params['nickname']
     pinfile = module.params['pinfile']
     db_group = 'apache'
+
+    if remove:
+        try:
+            cmd = ("getcert stop-tracking  -d %(location)s -n %(nickname)s"
+                   % module.params)
+            subprocess.check_call(cmd, shell=True, stdout=None, stderr=None,)
+            
+            result['message'] ='Cert  no longer tracked'                  
+            module.exit_json(**result)
+        except subprocess.CalledProcessError:
+            result['message'] ='Cert was not tracked'                  
+        return
+        
+
     found = _check_cert(location, nickname)
     
     # if the user is working with this module in only check mode we do not
@@ -216,22 +232,29 @@ def run_module():
         return result
 
     if found:
-        result['message'] ='Subject Cert already tracked'
+        result['message'] ='Subject Cert already tracked'                  
         module.exit_json(**result)
         return
+
+    if remove:
+        result['message'] ='Subject Cert not tracked'
+        module.exit_json(**result)
+        return
+
+    
     result['message'] ='Subject Cert  not yet tracked'
 
     if not _check_database(location, pinfile):
         _make_database(location, pinfile, db_group)
         
-        
+
+    cmd = "getcert request -c %(ca)s -d %(location)s -n %(nickname)s -K HTTP/`hostname` -N CN=`hostname`,O=EXAMPLE.COM -g 2048 -p %(pinfile)s" % module.params
+
+    subprocess.check_call(cmd, shell=True, stdout=None, stderr=None,)
     
-        
-    # ipa-getcert request -d /etc/httpd/nssdb -n Server-Cert -K HTTP/`hostname` -N CN=`hostname`,O=EXAMPLE.COM -g 2048 -p /etc/httpd/nssdb/pwdfile.txt
+            
 
     # ipa-getcert list -d /etc/httpd/nssdb/ -n Server-Cert
-
-    
     # in the event of a successful module execution, you will want to
     # simple AnsibleModule.exit_json(), passing the key/value results
     module.exit_json(**result)
