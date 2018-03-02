@@ -89,13 +89,56 @@ import uuid
 import os
 import grp
 
+
+STORE_NSS=' -d %(location)s -n %(nickname)s '
+STORE_OPENSSL=' -f %(certificate_file)s -k %(key_file)s '
+
+
 def chgrp(filepath, group):
     group = grp.getgrnam(group)
     uid = os.stat(filepath).st_uid
     os.chown(filepath, uid, group.gr_gid)
 
+
+def _check_files(module):
+    for key in ['certificate_file', 'key_file']:
+        file_name = module.params[key]
+        if not os.path.isfile(file_name):
+            return False
+    return True
+
+def _make_files(module, db_group):
+    mode = 0770
+    for key in ['certificate_file', 'key_file']:
+        file_name = module.params[key]        
+        file_dir = os.path.dirname(file_name)
+        try:
+            os.makedirs(file_dir)
+        except exceptions.OSError, ose:
+            if ose.errno == 17:
+                pass
+            else:
+                raise
+        with open(file_name, 'a') as f:
+            cmd = "touch %s" % file_name
+            subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
+            os.chmod(file_dir, mode)
+            os.chmod(file_name, mode)
+
+        try:
+            cmd = 'semanage fcontext -a -t cert_t %s' % file_dir
+            cmd = 'semanage fcontext -a -t cert_t %s(/.*)' % file_dir
+            p = subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
+
+        except ValueError:
+            pass
+        cmd = 'restorecon -FvvR %s' % file_dir
+        p = subprocess.call(cmd, shell=True, stdout=None, stderr=None)
+
+        
+            
 def _check_database(module):
-    cmd = '/bin/certutil -f %(pinfile)s  -L -d %(location)s' % module.params
+    cmd = '/bin/certutil -f %(pin_file)s  -L -d %(location)s' % module.params
     try:
         subprocess.check_call(cmd, shell=True, stdout=None, stderr=None,)
         return True
@@ -106,13 +149,13 @@ def _check_database(module):
 
 def _make_database(module, db_group):
 
-    pinfile = module.params['pinfile']
+    pin_file = module.params['pin_file']
     location = module.params['location']
 
     db_files = ['cert8.db', 'key3.db', 'secmod.db']
 
     pin = uuid.uuid4().hex
-    pindir = os.path.dirname(pinfile)
+    pindir = os.path.dirname(pin_file)
     try:
         os.makedirs(pindir)
     except exceptions.OSError, ose:
@@ -120,7 +163,7 @@ def _make_database(module, db_group):
             pass
         else:
             raise
-    with open(pinfile, 'w') as f:
+    with open(pin_file, 'w') as f:
         f.write(pin)
 
     mode = 0770
@@ -133,7 +176,7 @@ def _make_database(module, db_group):
         else:
             raise
     os.chmod(location, mode)
-    cmd = '/bin/certutil -f %(pinfile)s  -N -d %(location)s' % module.params
+    cmd = '/bin/certutil -f %(pin_file)s  -N -d %(location)s' % module.params
     p = subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
 
     os.chmod(location, mode)
@@ -151,11 +194,15 @@ def _make_database(module, db_group):
     cmd = 'restorecon -FvvR %(location)s' % module.params
     p = subprocess.call(cmd, shell=True, stdout=None, stderr=None)
 
-def _check_cert(module):
+def _check_cert( db_type_nss, module):
 
-    cmd = ('/bin/getcert list -c IPA  -d %(location)s -n %(nickname)s' %
-           module.params)
-    p = subprocess.Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+    cmd = '/bin/getcert list -c %(ca)s '
+    if  db_type_nss:
+        cmd = cmd + STORE_NSS
+    else:
+        cmd = cmd + STORE_OPENSSL
+    p = subprocess.Popen(cmd % module.params, shell=True,
+                         stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
 
     # If the Database file does not exist.
     if p.returncode != 0:
@@ -180,10 +227,17 @@ def run_module():
         db_group=dict(type='str', required=False),
         ca=dict(type='str', required=True),
         remove=dict(type='bool', required=False, default=False),
-        location=dict(type='str', required=True),
-        nickname=dict(type='str', required=True),
+
+        #NSS options
+        location=dict(type='str', required=False),
+        nickname=dict(type='str', required=False),
         token=dict(type='str', required=False),
-        pinfile=dict(type='str', required=False),
+
+        #OpenSSL options
+        certificate_file=dict(type='str', required=False),
+        key_file=dict(type='str', required=False),
+
+        pin_file=dict(type='str', required=True),
         kerberos_principal=dict(type='str', required=False),
         subject_name=dict(type='str', required=False),
         bits=dict(type='int', required=False),
@@ -212,11 +266,32 @@ def run_module():
     remove = module.params['remove']
     db_group =  module.params.get('db_group', 'apache')
 
+    db_type_nss = False
+    db_type_openssl = False
+
+    for nss_option in ['location', 'nickname', 'token']:
+        if module.params.get(nss_option) != None:
+            db_type_nss = True
+
+    for openssl_option in ['certificate_file', 'key_file']:
+        if module.params.get(openssl_option) != None:
+            db_type_openssl = True
+
+    if db_type_nss and  db_type_openssl:
+        module.fail_json(
+            msg='Incompatible options for both NSS and OpenSSL specified.',
+            **result)
+        return
+
     if remove:
         try:
-            cmd = ("getcert stop-tracking  -d %(location)s -n %(nickname)s"
-                   % module.params)
-            subprocess.check_call(cmd, shell=True, stdout=None, stderr=None,)
+            cmd = "getcert stop-tracking "
+            if db_type_nss:
+                cmd = cmd + STORE_NSS
+            else:
+                cmd = cmd + STORE_OPENSSL
+            subprocess.check_call(cmd % module.params, shell=True, stdout=None,
+                                  stderr=None,)
 
             result['message'] ='Cert  no longer tracked'
             module.exit_json(**result)
@@ -224,7 +299,8 @@ def run_module():
             result['message'] ='Cert was not tracked'
         return
 
-    found = _check_cert(module)
+    found = _check_cert(db_type_nss, module)
+
 
     # if the user is working with this module in only check mode we do not
     # want to make any changes to the environment, just return the current
@@ -242,16 +318,30 @@ def run_module():
         module.exit_json(**result)
         return
 
-
     result['message'] ='Subject Cert  not yet tracked'
 
-    if not _check_database(module):
-        _make_database(module, db_group)
+    if db_type_nss:
+        if not _check_database(module):
+            _make_database(module, db_group)
+    else:
+        if not _check_files(module):
+            _make_files(module, db_group)
 
+    cmd = "getcert request -c %(ca)s -g %(bits)d -p %(pin_file)s "
 
-    cmd = "getcert request -c %(ca)s -d %(location)s -n %(nickname)s -K HTTP/`hostname` -N CN=`hostname`,O=EXAMPLE.COM -g 2048 -p %(pinfile)s" % module.params
+    if module.params.get('kerberos_principal') is not None:
+        cmd = cmd + ' -K %(kerberos_principal)s '
 
-    subprocess.check_call(cmd, shell=True, stdout=None, stderr=None,)
+    if module.params.get('subject_name') is not None:
+        cmd = cmd + ' -N %(subject_name)s '
+
+    if db_type_nss:
+        cmd = cmd + STORE_NSS
+    else:
+        cmd = cmd + STORE_OPENSSL
+    
+    subprocess.check_call(cmd % module.params,
+                          shell=True, stdout=None, stderr=None)
 
     # ipa-getcert list -d /etc/httpd/nssdb/ -n Server-Cert
     # in the event of a successful module execution, you will want to

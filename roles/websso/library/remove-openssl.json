@@ -1,9 +1,8 @@
 {
     "ANSIBLE_MODULE_ARGS": {
-        "location": "/tmp/getcert/nss",
-        "nickname": "Server-Cert",
-        "token": "NSS Certificate DB",
-        "pinfile": "/tmp/etc/dirsrv/slapd-TEST/pwdfile.txt",
+        "certificate_file": "/tmp/getcert/openssl/cert.pem",
+        "key_file": "/tmp/getcert/openssl/key.pem",
+        "pin_file": "/tmp/getcert/openssl/pwdfile.txt",
         "kerberos_principal": "HTTP/ayoung541.test",
         "subject_name": "CN=ayoung541.test,O=TEST",
         "bits": 2048,
