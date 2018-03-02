@@ -14,6 +14,7 @@
     - openldap-clients
     - openssl
     - httpd
+    - mod_nss
 
 - name: upgrade all packages
   yum:
@@ -48,10 +49,11 @@
     location: /etc/httpd/alias
     nickname: Server-Cert    
     token: NSS Certificate DB
-    pinfile: /etc/httpd/alias/pwdfile.txt
+    pin_file: /etc/httpd/alias/pwdfile.txt
     kerberos_principal: "HTTP/sso.{{ ipa_realm | lower }}"
     bits: 2048
     ca: IPA
+    db_group: apache
 
 
 #HTTPD as reverse proxy
