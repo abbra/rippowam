@@ -3,7 +3,7 @@
         "location": "/tmp/getcert/nss",
         "nickname": "Server-Cert",
         "token": "NSS Certificate DB",
-        "pinfile": "/tmp/etc/dirsrv/slapd-TEST/pwdfile.txt",
+        "pin_file": "/tmp/etc/dirsrv/slapd-TEST/pwdfile.txt",
         "kerberos_principal": "HTTP/ayoung541.test",
         "subject_name": "CN=ayoung541.test,O=TEST",
         "bits": 2048,

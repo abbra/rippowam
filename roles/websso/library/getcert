@@ -139,7 +139,7 @@ def _make_files(module, db_group):
 
         
             
-def _check_database(module):
+def _check_nss_database(module):
     cmd = '/bin/certutil -f %(pin_file)s  -L -d %(location)s' % module.params
     try:
         subprocess.check_call(cmd, shell=True, stdout=None, stderr=None,)
@@ -149,7 +149,7 @@ def _check_database(module):
     except exceptions.OSError:
         return False
 
-def _make_database(module, db_group):
+def _make_nss_database(module, db_group):
 
     pin_file = module.params['pin_file']
     location = module.params['location']
@@ -207,7 +207,7 @@ def _check_cert( db_type_nss, module):
     p = subprocess.Popen(cmd % module.params, shell=True,
                          stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
 
-    # If the Database file does not exist.
+    # If the Nss_Database file does not exist.
     if p.returncode != 0:
         return
 
@@ -324,8 +324,8 @@ def run_module():
     result['message'] ='Subject Cert  not yet tracked'
 
     if db_type_nss:
-        if not _check_database(module):
-            _make_database(module, db_group)
+        if not _check_nss_database(module):
+            _make_nss_database(module, db_group)
     else:
         if not _check_files(module):
             _make_files(module, db_group)
