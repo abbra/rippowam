@@ -93,6 +93,9 @@ import grp
 STORE_NSS=' -d %(location)s -n %(nickname)s '
 STORE_OPENSSL=' -f %(certificate_file)s -k %(key_file)s '
 
+FILE_MODE=0640
+DIR_MODE=0750
+
 
 def chgrp(filepath, group):
     group = grp.getgrnam(group)
@@ -108,7 +111,6 @@ def _check_files(module):
     return True
 
 def _make_files(module, db_group):
-    mode = 0770
     for key in ['certificate_file', 'key_file']:
         file_name = module.params[key]        
         file_dir = os.path.dirname(file_name)
@@ -122,8 +124,8 @@ def _make_files(module, db_group):
         with open(file_name, 'a') as f:
             cmd = "touch %s" % file_name
             subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
-            os.chmod(file_dir, mode)
-            os.chmod(file_name, mode)
+            os.chmod(file_dir, DIR_MODE)
+            os.chmod(file_name, FILE_MODE)
 
         try:
             cmd = 'semanage fcontext -a -t cert_t %s' % file_dir
@@ -154,7 +156,7 @@ def _make_database(module, db_group):
 
     db_files = ['cert8.db', 'key3.db', 'secmod.db']
 
-    pin = uuid.uuid4().hex
+    pin =  uuid.uuid4().hex
     pindir = os.path.dirname(pin_file)
     try:
         os.makedirs(pindir)
@@ -166,23 +168,24 @@ def _make_database(module, db_group):
     with open(pin_file, 'w') as f:
         f.write(pin)
 
-    mode = 0770
+    os.chmod(pin_file, FILE_MODE)
 
     try:
-        os.makedirs(location, mode)
+        os.makedirs(location, DIR_MODE)
     except exceptions.OSError, ose:
         if ose.errno == 17:
             pass
         else:
             raise
-    os.chmod(location, mode)
+    os.chmod(location, DIR_MODE)
     cmd = '/bin/certutil -f %(pin_file)s  -N -d %(location)s' % module.params
     p = subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
+    chgrp("%s" % location, db_group)
 
-    os.chmod(location, mode)
+    os.chmod(location, DIR_MODE)
     for f in db_files:
         chgrp("%s/%s" % (location, f), db_group)
-        os.chmod("%s/%s" % (location, f), mode)
+        os.chmod("%s/%s" % (location, f), FILE_MODE)
 
     try:
         cmd = ('semanage fcontext -a -t cert_t "%(location)s(/.*)?"'
