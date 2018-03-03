@@ -3,10 +3,8 @@
         "certificate_file": "/tmp/getcert/openssl/cert.pem",
         "key_file": "/tmp/getcert/openssl/key.pem",
         "kerberos_principal": "HTTP/ayoung541.test",
-        "pin_file": "/tmp/getcert/openssl/pwdfile.txt",
         "subject_name": "CN=ayoung541.test,O=TEST",
         "bits": 2048,
-        "ca": "SelfSign",
-        "db_group": "apache"
+        "ca": "SelfSign"
     }
 }

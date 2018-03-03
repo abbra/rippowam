@@ -26,7 +26,7 @@ module: getcert
 
 short_description: X509 certificate tracking using getcert and certmonger
 
-version_added: "2.4"
+version_added: "2.8"
 
 description:
     - "The certmonger daemon monitors certificates for impending
@@ -41,14 +41,80 @@ with NSS databases.
 The certmonger command-line too, getcert is a very generic tool that can manage the certificates you are tracking."
 
 options:
-    name:
-        description:
-            - This is the message to send to the sample module
-        required: true
-    new:
-        description:
-            - Control to demo if the result of this module is changed or not
-        required: false
+
+
+        #NSS options
+        location:
+           description:
+               - directory location for the NSS database
+                 NSS only
+           required: False
+
+        nickname:
+           description:
+               - Nickname for the certificate in the NSS database.
+                 NSS Only
+           required: False
+
+        token:
+          description:
+               - NSS Only
+
+            required: False
+
+        #OpenSSL options
+        certificate_file:
+          description:
+               - OpenSSL Only
+          required: False
+
+        key_file:
+          description:
+               - OpenSSL Only
+          required: False
+
+        ca:
+           description:
+               - Which CA the Certmonger instance should use to request the
+                 certificate
+           required: True
+
+
+
+        remove:
+            description:
+                - used to remove/stop tracking a certificate
+                default: False
+            required:False
+
+
+        pin_file:
+            description:
+                - used to encrypt/decrypt the NSS or OpenSSL key store
+            required:False
+
+        kerberos_principal:
+            description:
+                - Add an extensionRequest to the signing request
+                  for a subjectAltName,
+                  with the specified Kerberos principal name as its value,
+            required:False
+
+        subject_name:
+            description:
+                - Set the subject name to include in the signing request.
+                -  The default used is CN=hostname, where hostname is the
+                   local hostname.
+            required:False
+
+        bits:
+            description:
+                -  In case a new key pair needs to be generated
+                   this option specifies the size of the key.
+                   default: 2048
+            required:False
+
+
 
 
 author:
@@ -97,12 +163,6 @@ FILE_MODE=0640
 DIR_MODE=0750
 
 
-def chgrp(filepath, group):
-    group = grp.getgrnam(group)
-    uid = os.stat(filepath).st_uid
-    os.chown(filepath, uid, group.gr_gid)
-
-
 def _check_files(module):
     for key in ['certificate_file', 'key_file']:
         file_name = module.params[key]
@@ -110,35 +170,23 @@ def _check_files(module):
             return False
     return True
 
-def _make_files(module, db_group):
+
+
+def _make_files(module):
+    _make_pin_file(module)
     for key in ['certificate_file', 'key_file']:
-        file_name = module.params[key]        
+        file_name = module.params[key]
         file_dir = os.path.dirname(file_name)
         try:
-            os.makedirs(file_dir)
-        except exceptions.OSError, ose:
-            if ose.errno == 17:
-                pass
-            else:
-                raise
-        with open(file_name, 'a') as f:
-            cmd = "touch %s" % file_name
-            subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
-            os.chmod(file_dir, DIR_MODE)
-            os.chmod(file_name, FILE_MODE)
-
-        try:
-            cmd = 'semanage fcontext -a -t cert_t %s' % file_dir
             cmd = 'semanage fcontext -a -t cert_t %s(/.*)' % file_dir
             p = subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
-
         except ValueError:
             pass
         cmd = 'restorecon -FvvR %s' % file_dir
         p = subprocess.call(cmd, shell=True, stdout=None, stderr=None)
 
-        
-            
+
+
 def _check_nss_database(module):
     cmd = '/bin/certutil -f %(pin_file)s  -L -d %(location)s' % module.params
     try:
@@ -149,13 +197,10 @@ def _check_nss_database(module):
     except exceptions.OSError:
         return False
 
-def _make_nss_database(module, db_group):
-
+def _make_pin_file(module):
     pin_file = module.params['pin_file']
-    location = module.params['location']
-
-    db_files = ['cert8.db', 'key3.db', 'secmod.db']
-
+    if pin_file is None:
+        return
     pin =  uuid.uuid4().hex
     pindir = os.path.dirname(pin_file)
     try:
@@ -170,6 +215,13 @@ def _make_nss_database(module, db_group):
 
     os.chmod(pin_file, FILE_MODE)
 
+
+def _make_nss_database(module):
+
+    location = module.params['location']
+    db_files = ['cert8.db', 'key3.db', 'secmod.db']
+    _make_pin_file(module)
+
     try:
         os.makedirs(location, DIR_MODE)
     except exceptions.OSError, ose:
@@ -180,11 +232,11 @@ def _make_nss_database(module, db_group):
     os.chmod(location, DIR_MODE)
     cmd = '/bin/certutil -f %(pin_file)s  -N -d %(location)s' % module.params
     p = subprocess.call(cmd, shell=True, stdout=None, stderr=None,)
-    chgrp("%s" % location, db_group)
+    chgrp("%s" % location)
 
     os.chmod(location, DIR_MODE)
     for f in db_files:
-        chgrp("%s/%s" % (location, f), db_group)
+        chgrp("%s/%s" % (location, f))
         os.chmod("%s/%s" % (location, f), FILE_MODE)
 
     try:
@@ -227,7 +279,6 @@ def run_module():
     # define the available arguments/parameters that a user can pass to
     # the module
     module_args = dict(
-        db_group=dict(type='str', required=False),
         ca=dict(type='str', required=True),
         remove=dict(type='bool', required=False, default=False),
 
@@ -240,7 +291,7 @@ def run_module():
         certificate_file=dict(type='str', required=False),
         key_file=dict(type='str', required=False),
 
-        pin_file=dict(type='str', required=True),
+        pin_file=dict(type='str', required=False),
         kerberos_principal=dict(type='str', required=False),
         subject_name=dict(type='str', required=False),
         bits=dict(type='int', required=False),
@@ -267,7 +318,6 @@ def run_module():
     )
 
     remove = module.params['remove']
-    db_group =  module.params.get('db_group', 'apache')
 
     db_type_nss = False
     db_type_openssl = False
@@ -325,12 +375,12 @@ def run_module():
 
     if db_type_nss:
         if not _check_nss_database(module):
-            _make_nss_database(module, db_group)
+            _make_nss_database(module)
     else:
         if not _check_files(module):
-            _make_files(module, db_group)
+            _make_files(module)
 
-    cmd = "getcert request -c %(ca)s -g %(bits)d -p %(pin_file)s "
+    cmd = "getcert request -r -c %(ca)s -g %(bits)d "
 
     if module.params.get('kerberos_principal') is not None:
         cmd = cmd + ' -K %(kerberos_principal)s '
@@ -339,12 +389,16 @@ def run_module():
         cmd = cmd + ' -N %(subject_name)s '
 
     if db_type_nss:
+        if module.params.get('pin_file') is not None:
+            cmd = cmd + ' -p %(pin_file)s '        
         cmd = cmd + STORE_NSS
     else:
         cmd = cmd + STORE_OPENSSL
-    
-    subprocess.check_call(cmd % module.params,
-                          shell=True, stdout=None, stderr=None)
+
+    cmd = cmd % module.params
+    result['changed'] = True
+    result['command'] = cmd
+    subprocess.check_call(cmd, shell=True, stdout=None, stderr=None)
 
     # ipa-getcert list -d /etc/httpd/nssdb/ -n Server-Cert
     # in the event of a successful module execution, you will want to

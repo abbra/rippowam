@@ -4,11 +4,10 @@
         "nickname": "Server-Cert",
         "certificate_file": "/tmp/etc/dirsrv/slapd-TEST",
         "key_file": "/tmp/etc/dirsrv/slapd-TEST/pwdfile.txt",
-        "pinfile": "/tmp/etc/dirsrv/slapd-TEST/pwdfile.txt",
+        "pin_file": "/tmp/etc/dirsrv/slapd-TEST/pwdfile.txt",
         "kerberos_principal": "HTTP/ayoung541.test",
         "subject_name": "CN=ayoung541.test,O=TEST",
         "bits": 2048,
-        "ca": "SelfSign",
-        "db_group": "apache"
+        "ca": "SelfSign"
     }
 }
