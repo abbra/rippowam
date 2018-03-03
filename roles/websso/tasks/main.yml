@@ -3,6 +3,10 @@
 - name: enable websso repository
   command: subscription-manager repos --enable=rh-sso-7.2-for-rhel-7-server-rpms
 
+- name: enable websso repository
+  command: subscription-manager repos --enable=jb-eap-7.1-for-rhel-7-server-rpms
+
+
 - name: install websso prereqs
   tags:
     - websso
@@ -44,19 +48,6 @@
 - name: Add service principals
   ipaservice: principal="HTTP/sso.{{ ipa_realm | lower }}@{{ ipa_realm }}"
 
-- name: HTTPS certificate NSS
-  getcert:
-    location: /etc/httpd/alias
-    nickname: Server-Cert
-    token: NSS Certificate DB
-    pin_file: /etc/httpd/alias/pwdfile.txt
-    kerberos_principal: "HTTP/sso.{{ ipa_realm | lower }}"
-    bits: 2048
-    ca: IPA
-    db_group: apache
-  when: False
-
-
 - name: HTTPS certificate OpenSSL
   getcert:
     key_file: /etc/pki/tls/private/localhost.key
@@ -64,7 +55,6 @@
     kerberos_principal: "HTTP/sso.{{ ipa_realm | lower }}@{{ ipa_realm }}"
     bits: 2048
     ca: IPA
-  when: True
 
 #TODO change group on these to match apache
 #    key_file: /etc/pki/tls/private/localhost.key
