@@ -249,9 +249,9 @@ def _make_nss_database(module):
     cmd = 'restorecon -FvvR %(location)s' % module.params
     p = subprocess.call(cmd, shell=True, stdout=None, stderr=None)
 
-def _check_cert( db_type_nss, module, remove_if_mismatched = False):
+def _check_cert( db_type_nss, module, remove_if_mismatched, result):
 
-    cmd = '/bin/getcert list -c %(ca)s '
+    cmd = '/bin/getcert list  '
     if  db_type_nss:
         cmd = cmd + STORE_NSS
     else:
@@ -263,14 +263,15 @@ def _check_cert( db_type_nss, module, remove_if_mismatched = False):
 
     # If the Nss_Database file does not exist.
     if p.returncode != None:
-        return
+        return False
 
     found = False
     subject = module.params.get('subject')
     if subject is None:
         subject = module.params.get('kerberos_principal')
-    
+
     for line in p.stdout:
+
         fields = line.strip().split(':')
         try:
             if fields[0] == 'subject':
@@ -287,8 +288,11 @@ def _check_cert( db_type_nss, module, remove_if_mismatched = False):
                     cmd = cmd % module.params
                     subprocess.call(cmd, shell=True, stdout=None, stderr=None)
                     return False
+                else:
+                    return True
         except:
             print ('err')
+
     return found
 
 def _remove_cert_by_nickname(module):
@@ -374,7 +378,7 @@ def run_module():
         return
 
     delete_if_conflict = not module.check_mode
-    found = _check_cert(db_type_nss, module, delete_if_conflict)
+    found = _check_cert(db_type_nss, module, delete_if_conflict, result)
 
 
     # if the user is working with this module in only check mode we do not
@@ -412,7 +416,7 @@ def run_module():
 
     if db_type_nss:
         if module.params.get('pin_file') is not None:
-            cmd = cmd + ' -p %(pin_file)s '        
+            cmd = cmd + ' -p %(pin_file)s '
         cmd = cmd + STORE_NSS
     else:
         cmd = cmd + STORE_OPENSSL
