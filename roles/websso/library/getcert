@@ -158,6 +158,7 @@ import grp
 
 STORE_NSS=' -d %(location)s -n %(nickname)s '
 STORE_OPENSSL=' -f %(certificate_file)s -k %(key_file)s '
+SEARCH_OPENSSL=' -f %(certificate_file)s '
 
 FILE_MODE=0640
 DIR_MODE=0750
@@ -169,7 +170,6 @@ def _check_files(module):
         if not os.path.isfile(file_name):
             return False
     return True
-
 
 
 def _make_files(module):
@@ -249,31 +249,52 @@ def _make_nss_database(module):
     cmd = 'restorecon -FvvR %(location)s' % module.params
     p = subprocess.call(cmd, shell=True, stdout=None, stderr=None)
 
-def _check_cert( db_type_nss, module):
+def _check_cert( db_type_nss, module, remove_if_mismatched = False):
 
     cmd = '/bin/getcert list -c %(ca)s '
     if  db_type_nss:
         cmd = cmd + STORE_NSS
     else:
-        cmd = cmd + STORE_OPENSSL
-    p = subprocess.Popen(cmd % module.params, shell=True,
+        cmd = cmd + SEARCH_OPENSSL
+
+    cmd = cmd % module.params
+    p = subprocess.Popen(cmd, shell=True,
                          stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
 
     # If the Nss_Database file does not exist.
-    if p.returncode != 0:
+    if p.returncode != None:
         return
 
     found = False
-
+    subject = module.params.get('subject')
+    if subject is None:
+        subject = module.params.get('kerberos_principal')
+    
     for line in p.stdout:
-        found = True
         fields = line.strip().split(':')
         try:
             if fields[0] == 'subject':
-                print(fields[1].strip())
+                found = True
+                cert_subject = fields[1].strip()
+                if cert_subject != subject and remove_if_mismatched:
+                    cmd = 'getcert stop-tracking '
+                    if  db_type_nss:
+                        cmd = cmd + STORE_NSS
+                        _remove_cert_by_nickname(module)
+                    else:
+                        cmd = cmd + STORE_OPENSSL
+                        os.remove(module.params['certificate_file'])
+                    cmd = cmd % module.params
+                    subprocess.call(cmd, shell=True, stdout=None, stderr=None)
+                    return False
         except:
             print ('err')
     return found
+
+def _remove_cert_by_nickname(module):
+    cmd = "certutil -D -d %(location)s -n %(nickname)s" % module.params
+    subprocess.call( cmd , shell=True, stdout=None, stderr=None)
+
 
 def run_module():
     # define the available arguments/parameters that a user can pass to
@@ -352,7 +373,8 @@ def run_module():
             result['message'] ='Cert was not tracked'
         return
 
-    found = _check_cert(db_type_nss, module)
+    delete_if_conflict = not module.check_mode
+    found = _check_cert(db_type_nss, module, delete_if_conflict)
 
 
     # if the user is working with this module in only check mode we do not

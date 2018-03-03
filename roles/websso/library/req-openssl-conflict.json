@@ -1,0 +1,10 @@
+{
+    "ANSIBLE_MODULE_ARGS": {
+        "certificate_file": "/tmp/getcert/openssl/cert.pem",
+        "key_file": "/tmp/getcert/openssl/key.pem",
+        "kerberos_principal": "HTTP/conflict",
+        "subject_name": "conflict",
+        "bits": 2048,
+        "ca": "SelfSign"
+    }
+}

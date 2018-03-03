@@ -1,0 +1,12 @@
+{
+    "ANSIBLE_MODULE_ARGS": {
+        "location": "/tmp/getcert/nss",
+        "nickname": "Server-Cert",
+        "token": "NSS Certificate DB",
+        "pin_file": "/tmp/getcert/nss/pwdfile.txt",
+        "kerberos_principal": "conflict",
+        "subject_name": "conflict",
+        "bits": 2048,
+        "ca": "SelfSign"
+    }
+}
