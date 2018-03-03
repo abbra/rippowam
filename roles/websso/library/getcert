@@ -251,7 +251,7 @@ def _make_nss_database(module):
 
 def _check_cert( db_type_nss, module, remove_if_mismatched = False):
 
-    cmd = '/bin/getcert list -c %(ca)s '
+    cmd = '/bin/getcert list '
     if  db_type_nss:
         cmd = cmd + STORE_NSS
     else:
