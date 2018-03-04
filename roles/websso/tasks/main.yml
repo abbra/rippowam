@@ -48,6 +48,7 @@
 - name: Add service principals
   ipaservice: principal="HTTP/sso.{{ ipa_realm | lower }}@{{ ipa_realm }}"
 
+
 - name: HTTPS certificate OpenSSL
   getcert:
     key_file: /etc/pki/tls/private/localhost.key
@@ -55,6 +56,8 @@
     kerberos_principal: "HTTP/sso.{{ ipa_realm | lower }}@{{ ipa_realm }}"
     bits: 2048
     ca: IPA
+
+
 
 #TODO change group on these to match apache
 #    key_file: /etc/pki/tls/private/localhost.key
@@ -69,6 +72,13 @@
   copy: src=websso-proxy.conf
         dest=/etc/httpd/conf.d/websso-proxy.conf
         owner=root group=root mode="u=rw,g=r,o=r"
+
+
+- name: enable standalone-ha.xml
+  lineinfile:
+    path: /opt/rh/rh-sso7/service-environment
+    line: WILDFLY_SERVER_CONFIG=standalone-ha.xml
+
 
 - name: rh_sso systemd services
   tags:
@@ -110,18 +120,4 @@
   with_items: "{{ websso_firewall_ports  }}"
 
 
-- name: enable bind address
-  lineinfile:
-    dest: /etc/opt/rh/rh-sso7/keycloak/rh-sso7.conf
-    line: WILDFLY_BIND="0.0.0.0"
-    insertafter: ^#WILDFLY_BIND=0.0.0.0$
-  notify:
-     - restart websso
 
-- name: realm in standalone.xml
-  xml:
-    path: /etc/opt/rh/rh-sso7/keycloak/standalone/standalone.xml
-    xpath: /t:server/management/security-realms
-    namespaces:
-      t: urn:jboss:domain:5.0
-    state: present
