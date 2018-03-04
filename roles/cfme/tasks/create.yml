@@ -3,7 +3,7 @@
 - name: create CFME volume
   os_volume:
     cloud: "{{ cloudname }}"
-    image: cfme-rhevm-5.9.0.15-1
+    image: cfme-46-ga
     size: 80
     display_name: cfme_volume
   register: cfme_volume
