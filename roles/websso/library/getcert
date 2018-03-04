@@ -289,6 +289,7 @@ def _check_cert( db_type_nss, module, remove_if_mismatched = False):
                     return False
         except:
             print ('err')
+         
     return found
 
 def _remove_cert_by_nickname(module):
@@ -416,7 +417,15 @@ def run_module():
         cmd = cmd + STORE_NSS
     else:
         cmd = cmd + STORE_OPENSSL
+        #possible that there is a certificate in the file but not yet tracked
+        try:
+            os.remove(module.params['certificate_file'])
+        except:
+            pass
 
+
+
+        
     cmd = cmd % module.params
     result['changed'] = True
     result['command'] = cmd
