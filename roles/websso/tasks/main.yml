@@ -57,8 +57,6 @@
     bits: 2048
     ca: IPA
 
-
-
 #TODO change group on these to match apache
 #    key_file: /etc/pki/tls/private/localhost.key
 #    certificate_file: /etc/pki/tls/certs/localhost.crt
@@ -118,6 +116,3 @@
              state=enabled
              immediate=yes
   with_items: "{{ websso_firewall_ports  }}"
-
-
-
