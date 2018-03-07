@@ -1,0 +1,16 @@
+---
+- os_server_facts:
+    cloud: "{{ cloudname }}"
+  register: openstack_servers
+
+- name: add IPA clients
+  add_host:
+    groups:
+    - ipaclients
+    name: "{{ item.name }}"
+  with_items: "{{ openstack_servers }}"
+  when: item.name != "idm.{{ ipa_domain }}"
+
+- debug:
+    var: item
+  with_items: "{{ groups.ipaclients }}"
