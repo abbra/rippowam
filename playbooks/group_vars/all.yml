@@ -1,6 +1,8 @@
 ---
-username: "{{ ansible_env.USER }}"
+username: "{{ lookup('env','USER') }}"
 clustername: "{{username }}.{{ cloudname }}"
+ipa_domain: "{{ clustername }}"
+ipa_realm: "{{ clustername|upper }}"
 ssh_config_path: "{{ ansible_env.HOME }}/.ssh/config"
 netname: "{{ username  }}-private-net"
 securitygroupname: "{{username }}-rdu-all-open"

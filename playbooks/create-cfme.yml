@@ -4,3 +4,10 @@
     teardown: false
   roles:
     -  cfme
+
+- hosts: cfme
+  remote_user: root
+  roles:
+    - hostname
+    - subscribe
+    - cfmeconf

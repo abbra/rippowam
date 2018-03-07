@@ -6,6 +6,7 @@
     image: cfme-46-ga
     size: 80
     display_name: cfme_volume
+    api_timeout: 120
   register: cfme_volume
 
 - os_networks_facts:
@@ -28,11 +29,12 @@
     boot_volume: "{{ cfme_volume.volume.id }}"
     security_groups:
       - "{{ securitygroupname }}"
+    meta:
+      hostname: "cfme.{{ clustername }}"
+      fqdn: "cfme.{{ clustername }}"
     nics:
       -  net-id:  "{{ osnetwork.ansible_facts.openstack_networks.0.id }}"
          net-name: "{{ netname }}_network"
-    meta:
-      hostname: "cfme.{{ clustername }}"
   register: cfme_server
 
 - name: create CFME database volume
@@ -59,7 +61,19 @@
     line:  "  Hostname {{ cfme_server.server.interface_ip  }}"
     insertafter: "cfme.{{ clustername }}"
 
+- name: Wait 60 seconds for target connection to become reachable/usable
+  hosts: cfme
+  wait_for_connection:
+    timeout: 180
 
 - command: ssh-keygen -R  {{ cfme_server.server.interface_ip  }}
 - command: ssh-keygen -R  cfme.{{ clustername }}
-  
+
+- name: add to inventory
+  add_host:
+    groups:
+    - cfme
+    name: "{{ cfme_server.server.interface_ip  }}"
+
+
+
