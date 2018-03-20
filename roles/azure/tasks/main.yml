@@ -1,0 +1,96 @@
+- name: Create a resource group
+  azure_rm_resourcegroup:
+    name: "{{ az_resources }}"
+    location: "{{ az_location }}"
+    tags:
+        testing: testing
+        delete: never
+
+- name: Create virtual network
+  azure_rm_virtualnetwork:
+    resource_group: "{{ az_resources }}"
+    name: "{{ az_network }}"
+    address_prefixes: "10.10.0.0/16"
+
+- name: Create storage account
+  azure_rm_storageaccount:
+    resource_group: "{{ az_resources }}"
+    name: "{{ az_storage }}"
+    account_type: Standard_LRS
+
+- name: Add subnet
+  azure_rm_subnet:
+    resource_group: "{{ az_resources }}"
+    name: "{{ az_subnet }}"
+    address_prefix: "10.10.0.0/24"
+    virtual_network: testvn001
+
+- name: Create public ip
+  azure_rm_publicipaddress:
+    resource_group: "{{ az_resources }}"
+    allocation_method: Static
+    name: publicip001
+
+- name: Create security group that allows SSH
+  azure_rm_securitygroup:
+    resource_group: "{{ az_resources }}"
+    name: "{{ az_sec_group }}"
+    rules:
+      - name: SSH
+        protocol: Tcp
+        destination_port_range: 22
+        access: Allow
+        priority: 101
+        direction: Inbound
+      - name: HTTP
+        protocol: Tcp
+        destination_port_range: 80
+        access: Allow
+        priority: 102
+        direction: Inbound
+      - name: HTTPS
+        protocol: Tcp
+        destination_port_range: 443
+        access: Allow
+        priority: 103
+        direction: Inbound
+
+
+- name: Create NIC
+  azure_rm_networkinterface:
+    resource_group: "{{ az_resources }}"
+    name: "{{ az_nic }}"
+    virtual_network: "{{ az_network }}"
+    subnet: "{{ az_subnet }}"
+    public_ip_name: publicip001
+    security_group: secgroup001
+
+- name: Create virtual machine
+  azure_rm_virtualmachine:
+    resource_group: "{{ az_resources }}"
+    name: testvm001
+    vm_size: Standard_D1
+    storage_account: "{{ az_storage }}"
+    storage_container: testvm001
+    storage_blob: testvm001.vhd
+    admin_username: "{{ az_username }}"
+    admin_password: "{{ az_password }}"
+    network_interfaces: "{{ az_nic }}"
+    image:
+      offer: CentOS
+      publisher: OpenLogic
+      sku: '7.1'
+      version: latest
+
+
+- name: Create virtual machine
+  azure_rm_virtualmachine:
+    resource_group: "{{ az_resources }}"
+    name: CloudForms
+    vm_size: Standard_D1
+    admin_username: "{{ az_username }}"
+    admin_password: "{{ az_password }}"
+    image:
+      name: cfme-azure-5.9.0.22-1      
+      resource_group: CFME-NE
+
