@@ -55,7 +55,6 @@
         priority: 103
         direction: Inbound
 
-
 - name: Create NIC
   azure_rm_networkinterface:
     resource_group: "{{ az_resources }}"
@@ -68,22 +67,21 @@
 - name: Create virtual machine
   azure_rm_virtualmachine:
     resource_group: "{{ az_resources }}"
-    name: testvm001
+    name: "{{ item.name }}"
     vm_size: Standard_D1
-    storage_account: "{{ az_storage }}"
-    storage_container: testvm001
-    storage_blob: testvm001.vhd
+    managed_disk_type: "Standard_LRS"
     admin_username: "{{ az_username }}"
     admin_password: "{{ az_password }}"
-    network_interfaces: "{{ az_nic }}"
     image:
-      offer: CentOS
-      publisher: OpenLogic
-      sku: '7.1'
-      version: latest
+      offer: RHEL
+      publisher: RedHat
+      sku: '7.3'
+      urn: 'RedHat:RHEL:7.3:latest'
+      version: '7.3.2017090723'
+  with_items: "{{ cluster_hosts }}"
+  register: osservers
 
-
-- name: Create virtual machine
+- name: Create CFME virtual machine
   azure_rm_virtualmachine:
     resource_group: "{{ az_resources }}"
     name: CloudForms
@@ -93,4 +91,25 @@
     image:
       name: cfme-azure-5.9.0.22-1      
       resource_group: CFME-NE
+
+ 
+- name: create additional volumes
+  azure_rm_managed_disk:    
+    name: "{{ item.volume_name }}"
+    location: eastus
+    resource_group: "{{ az_resources }}"
+    disk_size_gb: 40
+    managed_by: "{{ item.server_name }}"
+  register: cluster_volumes_attached
+  with_items: "{{ cluster_volumes }}"
+
+
+- name: create additional CFME volumes
+  azure_rm_managed_disk:    
+    name: CloudForms_var_volume
+    location: eastus
+    resource_group: "{{ az_resources }}"
+    disk_size_gb: 40
+    managed_by: CloudForms
+
 

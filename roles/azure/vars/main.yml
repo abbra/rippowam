@@ -8,3 +8,21 @@ az_nic: aynic01
 az_network: testvn001
 az_username: ayoung
 az_password: e8f58a03-3fb6-4fa0-b7af-0F1A71A93605
+
+
+cluster_hosts:
+  - {name: idm,    flavor:  m1.medium}
+#  - {name: sso,    flavor:  m1.medium}
+#  - {name: master0, flavor:  m1.medium}   #this needs to be xlarge IAW OSC docs
+#  - {name: master1, flavor:  m1.medium}
+#  - {name: master2, flavor:  m1.medium}
+#  - {name: node0,  flavor:  m1.medium}
+#  - {name: node1,  flavor:  m1.medium}
+#  - {name: node2,  flavor:  m1.medium}
+
+
+cluster_volumes:
+  - {server_name: idm, volume_name: idm_dirsrv_volume, size: 30}
+#  - {server_name: master0, volume_name: master0_var_volume, size: 30}
+#  - {server_name: master1, volume_name: master1_var_volume, size: 30}
+#  - {server_name: master2, volume_name: master2_var_volume, size: 30}
