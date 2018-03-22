@@ -3,4 +3,4 @@
   vars:
     teardown: false
   roles:
-    -  provision
+    -  provision/openstack
