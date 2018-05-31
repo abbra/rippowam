@@ -1,0 +1,7 @@
+- hosts: zubat
+  become: yes
+  remote_user: ayoung
+  become_user: root
+  roles:
+    - subscribe
+    - rhv
