@@ -2,6 +2,8 @@
   file:
     path: /etc/cloud/cloud-init.disabled
     state: touch
+  ignore_errors: yes
+
 
 - lineinfile:
     path: /etc/resolv.conf
@@ -11,6 +13,7 @@
   with_items:
       - "{{ lab_nameserver1 }}"
       - "{{ lab_nameserver2 }}"
+  when: False
 
 - name: Subscribe
   redhat_subscription:
@@ -18,3 +21,4 @@
     username: "{{ redhat_user }}"
     password: "{{ redhat_password }}"
     pool_ids: "{{ redhat_pool_id }}"
+  ignore_errors: yes
