@@ -1,12 +1,14 @@
 ---
-- hosts: localhost
-  vars:
-    teardown: false
-  roles:
-    -  cfme
+#- hosts: localhost
+#  vars:
+#    teardown: false
+#  roles:
+#    -  cfme
 
 - hosts: cfme
-  remote_user: root
+  become: yes
+  remote_user: ayoung
+  become_user: root
   roles:
     - subscribe
     - cfmeconf
