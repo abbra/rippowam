@@ -58,11 +58,25 @@
 - name: Create NIC
   azure_rm_networkinterface:
     resource_group: "{{ az_resources }}"
+    name: "{{ item.name }}.nic"
+    virtual_network: "{{ az_network }}"
+    subnet: "{{ az_subnet }}"
+    public_ip_name: "{{ item.name }}.publicip"
+    security_group: secgroup001
+  with_items: "{{ cluster_hosts }}"
+
+
+
+- name: Create NIC
+  azure_rm_networkinterface:
+    resource_group: "{{ az_resources }}"
     name: "{{ az_nic }}"
     virtual_network: "{{ az_network }}"
     subnet: "{{ az_subnet }}"
     public_ip_name: publicip001
     security_group: secgroup001
+
+
 
 - name: Create virtual machine
   azure_rm_virtualmachine:
@@ -72,6 +86,8 @@
     managed_disk_type: "Standard_LRS"
     admin_username: "{{ az_username }}"
     admin_password: "{{ az_password }}"
+    ssh_public_keys:  "{{ ayoung_publickey }}"
+    network_interfaces: "{{ item.name }}.nic"
     image:
       offer: RHEL
       publisher: RedHat
@@ -88,10 +104,11 @@
     vm_size: Standard_D1
     admin_username: "{{ az_username }}"
     admin_password: "{{ az_password }}"
+    network_interfaces: "{{ az_nic }}"
     image:
       name: cfme-azure-5.9.0.22-1      
       resource_group: CFME-NE
-
+  when: True
  
 - name: create additional volumes
   azure_rm_managed_disk:    
@@ -111,5 +128,6 @@
     resource_group: "{{ az_resources }}"
     disk_size_gb: 40
     managed_by: CloudForms
+  when: True
 
 

@@ -12,6 +12,8 @@ az_password: e8f58a03-3fb6-4fa0-b7af-0F1A71A93605
 
 cluster_hosts:
   - {name: idm,    flavor:  m1.medium}
+  - {name: tower,    flavor:  m1.medium}
+
 #  - {name: sso,    flavor:  m1.medium}
 #  - {name: master0, flavor:  m1.medium}   #this needs to be xlarge IAW OSC docs
 #  - {name: master1, flavor:  m1.medium}
@@ -21,8 +23,23 @@ cluster_hosts:
 #  - {name: node2,  flavor:  m1.medium}
 
 
-cluster_volumes:
-  - {server_name: idm, volume_name: idm_dirsrv_volume, size: 30}
-#  - {server_name: master0, volume_name: master0_var_volume, size: 30}
-#  - {server_name: master1, volume_name: master1_var_volume, size: 30}
-#  - {server_name: master2, volume_name: master2_var_volume, size: 30}
+cluster_volumes: []
+#  - {server_name: idm, volume_name: idm_dirsrv_volume, size: 30}
+#  - {server_name: master0, volume_name: master0_tmp_volume, size: 30}
+#  - {server_name: master1, volume_name: master1_tmp_volume, size: 30}
+#  - {server_name: master2, volume_name: master2_tmp_volume, size: 30}
+#  - {server_name: master0, volume_name: master0_local_volume, size: 30}
+#  - {server_name: master1, volume_name: master1_local_volume, size: 30}
+#  - {server_name: master2, volume_name: master2_local_volume, size: 30}
+#  - {server_name: master0, volume_name: master0_docker_volume, size: 30}
+#  - {server_name: master1, volume_name: master1_docker_volume, size: 30}
+#  - {server_name: master2, volume_name: master2_docker_volume, size: 30}
+#  - {server_name: node0, volume_name: node0_tmp_volume, size: 30}
+#  - {server_name: node1, volume_name: node1_tmp_volume, size: 30}
+#  - {server_name: node2, volume_name: node2_tmp_volume, size: 30}
+
+
+
+
+ayoung_publickey:
+  - {path: /home/ayoung/.ssh/authorized_keys, key_data: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0OUPe+UxaIXwwyjD15YiooQM3KoIbLD7/T+o4Ji8Q+bX6BMxNvtgF04Z1lFu7X4U5Rtro8pegxV2weH7jNs5vGvyOgKnNsEY6aeZI1K/e7OPoDDARr2CQ4addxZNtpmlQQ6snvEoypKuzsQDO//wzKGdd7GXD8HiHPkfNjkjYmbUFGuntZibY2vUQOsbCi8D9J8RgycNe0DTjVkDKvJcSJsNiPVOoefX7ZnLclXGgYFMZCAsIPhVWjGgQ7rIB7fEgDTvEiFfNW4JRF4Q6WuYDGiFQ/G3v2XKRghk54xPPJZljM1SyZo8VL1Dn29dfj1dwH4oSTbOLisQM0LJ/EgzT ayoung@ayoung.boston.devel.redhat.com"}
