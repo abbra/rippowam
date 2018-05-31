@@ -1,0 +1,30 @@
+---
+- shell: "{{ item }}"
+  with_items:
+  - subscription-manager repos --disable='*'
+  - >
+    subscription-manager repos
+    --enable="rhel-7-server-rpms"
+    --enable="rhel-7-server-supplementary-rpms"
+    --enable="rhel-7-server-rhv-4.1-manager-rpms"
+    --enable="rhel-7-server-rhv-4-manager-tools-rpms"
+    --enable="jb-eap-7-for-rhel-7-server-rpms"
+
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+
+
+- name: install rhevm package
+  yum:
+    name: rhevm
+    state: latest
+
+- name: copy answer file
+  template:
+    src: answers.txt.j2
+    dest: /answers.txt
+
+- name: engine-setup
+  command: engine-setup  --config=/answers.txt
