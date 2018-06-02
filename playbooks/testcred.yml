@@ -26,4 +26,8 @@
       local_action:
         module: nova_compute
         login_username: "{{ clouds.devstack.auth.username }}"
+<<<<<<< HEAD
         login_password: "{{ clouds.devstack.auth.password }}"
+=======
+        login_password: "{{ clouds.devstack.auth.password }}"
+>>>>>>> test creds
