@@ -15,5 +15,7 @@
     - name: "Setting nova instance state to: {{ nova_instance_state }}"
       local_action:
         module: os_server_facts
+        cloud: "{{ cloudname }}"
+
     -  name: list server facts
        debug: msg="{{ openstack_servers }}"
