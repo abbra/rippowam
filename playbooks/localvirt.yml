@@ -1,0 +1,18 @@
+---
+- name: Create Local RHEL VMs
+  hosts: localhost
+  vars:
+     baseimage: rhel-server-7.5-update-1-x86_64-kvm.qcow2
+
+  tasks:
+  -  name: Ensure we have an image file
+     copy:
+       src: "{{ ansible_env.HOME  }}/Downloads/{{ baseimage }}"
+       dest: /var/lib/libvirt/images/tower.qcow2
+
+
+  - name: start vm
+    virt:
+        name: 'tower'
+        state: running
+        uri: 'qemu:///system'
