@@ -91,37 +91,6 @@
     force: yes
     backup: no
 
-- file:
-    path: "{{ ssh_config_path }}"
-    state: touch
-
-- lineinfile:
-    insertbefore: "BOF"
-    path: "{{ ssh_config_path }}"
-    line: "{{ item }}"
-  with_items:
-    - "ControlMaster auto"
-    - "ControlPath /tmp/ssh_mux_%h_%p_%rA"
-
-- lineinfile:
-    path: "{{ ssh_config_path }}"
-    line: Host "{{ item.server.name }}"
-  with_items: "{{ osservers.results }}"
-
-- lineinfile:
-    path: "{{ ssh_config_path }}"
-    line:  "  Hostname {{ item.server.interface_ip }}"
-    insertafter: '{{ item.server.name }}'
-  with_items: "{{ osservers.results }}"
-
-- command: ssh-keygen -R  {{ item.server.interface_ip }}
-  with_items: "{{ osservers.results }}"
-
-- command: ssh-keygen -R {{ item.server.name }}
-  with_items: "{{ osservers.results }}"
-
-#TODO:  Make a dictionary of volumes and attach them using with_items
-
 - name: create openshift var volume
   os_volume:
     cloud: "{{ cloudname }}"
