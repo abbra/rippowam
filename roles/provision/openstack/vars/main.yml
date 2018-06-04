@@ -15,10 +15,6 @@ lab_nameserver3: 8.8.8.8
 cluster_hosts:
   - {name: idm,    flavor:  m1.medium}
   - {name: sso,    flavor:  m1.medium}
-
-
-#niot used yet, placeholders
-additional_cluster_hosts:
   - {name: master0, flavor:  m1.medium}   #this needs to be xlarge IAW OSC docs
   - {name: master1, flavor:  m1.medium}
   - {name: master2, flavor:  m1.medium}
@@ -28,10 +24,7 @@ additional_cluster_hosts:
   - {name: bastion,  flavor:  m1.small}
 
 
-cluster_volumes: []
-
-#not used yet, placeholders
-additional_cluster_volumes:
+cluster_volumes: 
   - {server_name: master0, volume_name: master0_var_volume, size: 30}
   - {server_name: master1, volume_name: master1_var_volume, size: 30}
   - {server_name: master2, volume_name: master2_var_volume, size: 30}
