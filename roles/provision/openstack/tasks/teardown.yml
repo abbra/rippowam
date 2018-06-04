@@ -62,18 +62,18 @@
   with_items: "{{ cluster_hosts  }}"
 
 - os_router:
-    cloud: rdusalab
+    cloud: "{{ cloudname }}"
     state: absent
     name: "{{ netname }}_router"
 
 - os_subnet:
-    cloud: rdusalab
+    cloud: "{{ cloudname }}"
     state: absent
     network_name: "{{ netname }}_network"
     name: "{{ netname }}_subnet"
 
 - os_network:
-    cloud: rdusalab
+    cloud: "{{ cloudname }}"
     state: absent
     name: "{{ netname }}_network"
     external: false
