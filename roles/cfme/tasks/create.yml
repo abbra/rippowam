@@ -23,7 +23,7 @@
     cloud: "{{ cloudname }}"
     state: present
     name: "cfme.{{ clustername }}"
-    key_name: ayoung-pubkey
+    key_name: "{{ sshkeyname }}"
     timeout: 200
     flavor: 2
     boot_volume: "{{ cfme_volume.volume.id }}"

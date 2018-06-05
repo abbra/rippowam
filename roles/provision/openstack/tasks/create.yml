@@ -47,7 +47,7 @@
     state: present
     name: "{{ item.name }}.{{ clustername }}"
     image: rhel-guest-image-7.4-0
-    key_name: ayoung-pubkey
+    key_name: "{{ sshkeyname }}"
     timeout: 200
     flavor: "{{ item.flavor }}"
     security_groups:
