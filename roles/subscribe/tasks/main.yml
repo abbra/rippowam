@@ -4,7 +4,6 @@
     state: touch
   ignore_errors: yes
 
-
 - lineinfile:
     path: /etc/resolv.conf
     state: present
