@@ -1,32 +1,5 @@
 ---
-username: ayoung
 clustername: "{{username }}.{{ cloudname }}"
 config_dir: "{{ lookup('env', 'HOME') }}/rippowam"
 cluster_dir: "{{ config_dir }}/deployments/{{ clustername }}"
-
-
-cloud_user: cloud-user
-ipa_forwarder: 192.168.52.3
-lab_nameserver1: 8.8.8.8
-lab_nameserver2: 8.8.8.7
-lab_nameserver3: 8.8.8.8
-
-
-cluster_hosts:
-  - {name: idm,    flavor:  m1.medium}
-  - {name: sso,    flavor:  m1.medium}
-  - {name: master0, flavor:  m1.medium}   #this needs to be xlarge IAW OSC docs
-  - {name: master1, flavor:  m1.medium}
-  - {name: master2, flavor:  m1.medium}
-  - {name: node0,   flavor:  m1.medium}
-  - {name: node1,   flavor:  m1.medium}
-  - {name: node2,   flavor:  m1.medium}
-  - {name: bastion, flavor:  m1.small}
-
-
-cluster_volumes: 
-  - {server_name: master0, volume_name: master0_var_volume, size: 30}
-  - {server_name: master1, volume_name: master1_var_volume, size: 30}
-  - {server_name: master2, volume_name: master2_var_volume, size: 30}
-
 
