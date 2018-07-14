@@ -6,7 +6,7 @@ ipa_forwarder: 192.168.52.3
 lab_nameserver1: 8.8.8.8
 lab_nameserver2: 8.8.8.7
 lab_nameserver3: 8.8.8.8
-
+public_network_name: public
 
 cluster_hosts:
   - {name: idm,    flavor:  m1.medium}

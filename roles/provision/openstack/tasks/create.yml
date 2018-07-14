@@ -22,7 +22,7 @@
     state: present
     name: "{{ netname }}_router"
     interfaces: "{{ netname }}_subnet"
-    network: public
+    network: "{{ public_network_name }}"
 
 - os_security_group:
     cloud: "{{ cloudname }}"
