@@ -49,7 +49,7 @@
     cloud: "{{ cloudname }}"
     state: present
     name: "{{ item.name }}.{{ clustername }}"
-    image: rhel-guest-image-7.4-0
+    image: "{{ image_name }}"
     key_name: "{{ sshkeyname }}"
     timeout: 200
     flavor: "{{ item.flavor }}"

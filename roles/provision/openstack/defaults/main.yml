@@ -7,6 +7,8 @@ lab_nameserver1: 8.8.8.8
 lab_nameserver2: 8.8.8.7
 lab_nameserver3: 8.8.8.8
 public_network_name: Public
+image_name: rhel-guest-image-7.4-0
+
 
 cluster_hosts:
   - {name: idm,    flavor:  m1.medium}
