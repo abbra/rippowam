@@ -1,7 +1,8 @@
 ---
+
 - hosts: localhost
   vars:
     teardown: false
-    teardown_network: false
+    teardown_network: true
   roles:
     -  provision/openstack
