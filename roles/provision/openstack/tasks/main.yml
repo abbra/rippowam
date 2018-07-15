@@ -4,3 +4,6 @@
 
 - include_tasks: teardown.yml
   when: teardown
+
+- include_tasks: teardown_network.yml
+  when: teardown_network
