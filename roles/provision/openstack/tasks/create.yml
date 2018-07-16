@@ -61,6 +61,7 @@
     meta:
       hostname: "{{ item.name }}.{{ clustername }}"
       fqdn: "{{ item.name }}.{{ clustername }}"
+      ansible_name: "{{ item.name }}"
     userdata: |
       #cloud-config
       hostname: "{{ item.name }}.{{ clustername }}"
