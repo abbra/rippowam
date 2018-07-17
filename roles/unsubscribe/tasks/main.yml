@@ -1,0 +1,7 @@
+- name: Subscribe
+  redhat_subscription:
+    state: absent
+    username: "{{ redhat_user }}"
+    password: "{{ redhat_password }}"
+    pool_ids: "{{ redhat_pool_id }}"
+  ignore_errors: yes

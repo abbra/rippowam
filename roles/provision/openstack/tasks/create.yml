@@ -16,9 +16,6 @@
     dns_nameservers:
       - "{{ lab_nameserver1 }}"
       - "{{ lab_nameserver2 }}"
-- debug:
-    msg: "Public network name is {{ public_network_name }}"
-
 
 - os_router:
     cloud: "{{ cloudname }}"
@@ -43,6 +40,10 @@
   with_items:
     - tcp
     - udp
+
+- debug:
+    msg: "Keyname is  {{ sshkeyname }}"
+
 
 - name: create servers
   os_server:
