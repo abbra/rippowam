@@ -1,19 +1,21 @@
 ---
 
-- debug:
-    msg: "Distro = {{ ansible_distribution }}"
+- name: get hostname to resolve via /etc/hosts file
+  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{ fqdn }}" state=present
+  when: hostvars[item].ansible_default_ipv4.address is defined
+
 
 - name: Enable a RHSM repository
   rhsm_repository:
     name: rhel-7-server-htb-rpms
     state: absent
-  when: ansible_distribution == 'Red Hat' and ansible_distribution_major_version == '7'
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
 
 - name: Enable a RHSM repository
   rhsm_repository:
     name: rhel-7-server-rpms
     state: present
-  when: ansible_distribution == 'Red Hat' and ansible_distribution_major_version == '7'
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
 
 - name: upgrade all packages
   yum:

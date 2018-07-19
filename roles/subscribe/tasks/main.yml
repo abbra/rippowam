@@ -21,3 +21,17 @@
     password: "{{ redhat_password }}"
     pool_ids: "{{ redhat_pool_id }}"
   ignore_errors: yes
+
+
+- lineinfile:
+    path: /etc/ssh/sshd_config
+    state: present
+    line: "{{ item }}"
+  with_items:
+      - "ClientAliveInterval 120"
+      - "ClientAliveCountMax 720"
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+  register: sshd_updated_contents
+
+- debug:
+    msg: " sshd_updated_contents {{ sshd_updated_contents }}  "
