@@ -1,4 +1,3 @@
-
 - hosts: ipa
   remote_user: "{{ cloud_user }}"
   tags: all
@@ -14,5 +13,5 @@
     - ipaserver
 
   vars:
-    hostname: "{{ ansible_fqdn }}"
+    ipa_fqdn: "idm.awx.devstack"
     ipa_admin_password: "{{ ipa_admin_user_password }}"
