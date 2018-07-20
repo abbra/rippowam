@@ -1,8 +1,10 @@
 ---
 
 - name: get hostname to resolve via /etc/hosts file
-  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{ fqdn }}" state=present
-  when: hostvars[item].ansible_default_ipv4.address is defined
+  lineinfile: 
+    path: /etc/hosts 
+    line: "{{ ansible_default_ipv4.address }} {{ ipa_fqdn }}" 
+    state: present
 
 
 - name: Enable a RHSM repository
