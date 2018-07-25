@@ -31,7 +31,13 @@
       - "ClientAliveInterval 120"
       - "ClientAliveCountMax 720"
   when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
-  register: sshd_updated_contents
+  register: sshd_contents
 
 - debug:
-    msg: " sshd_updated_contents {{ sshd_updated_contents }}  "
+    msg: " sshd_contents {{ sshd_contents }}  "
+
+- name: Restart service sshd, if there was a change to the sshd config file
+  service:
+    name: sshd
+    state: restarted
+  when: sshd_contents.changed
