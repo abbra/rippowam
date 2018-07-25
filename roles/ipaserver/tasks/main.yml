@@ -7,22 +7,6 @@
     state: present
 
 
-- name: Enable a RHSM repository
-  rhsm_repository:
-    name: rhel-7-server-htb-rpms
-    state: absent
-  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
-
-- name: Enable a RHSM repository
-  rhsm_repository:
-    name: rhel-7-server-rpms
-    state: present
-  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
-
-- name: upgrade all packages
-  yum:
-    name: '*'
-    state: latest
 
 - name: install ipa packages
   tags:
