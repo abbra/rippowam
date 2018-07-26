@@ -2,5 +2,6 @@
 - hosts: all
   become: yes
   become_user: root
+  remote_user: "{{ cloud_user }}"
   roles:
     -  subscribe
