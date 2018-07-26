@@ -1,0 +1,7 @@
+---
+- hosts: eap
+  become: yes
+  become_user: root
+  remote_user: "{{ cloud_user }}"
+  roles:
+    -  jbosseap

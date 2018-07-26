@@ -1,0 +1,36 @@
+---
+- name: Enable a RHSM repository
+  rhsm_repository:
+    name: jb-eap-7-for-rhel-7-server-rpms
+    state: present
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+
+- name: install EAP packages
+  tags:
+    - eap
+  command: yum -y groupinstall jboss-eap7
+  args:
+    warn: false
+
+#- name: Open Firewall for services
+#  tags:
+#    - eap
+#  firewalld: port={{ item }}/tcp
+#             permanent=true
+#             state=enabled
+#             immediate=yes
+#  with_items:
+#    - "{{ eap_http_port }}"
+#    - "{{ eap_https_port }}"
+#    - "{{ eap_http_management_port }}"
+#    - "{{ eap_https_management_port }}"
+
+- name: JBoss systemd service enable and start
+  tags:
+    - eap
+  service: name=eap7-standalone
+           enabled=yes
+           state=started
+  
+
