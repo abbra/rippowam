@@ -1,5 +1,7 @@
 ---
-- hosts: eap
+- hosts: all
+  #eventually this will be scoped only to eap hosts
+  #hosts: eap
   become: yes
   become_user: root
   remote_user: "{{ cloud_user }}"
