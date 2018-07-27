@@ -10,6 +10,7 @@
     - ipa
   roles:
     - subscribe
+    - update
     - ipaserver
 
   vars:

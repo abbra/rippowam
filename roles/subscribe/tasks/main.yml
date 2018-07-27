@@ -54,24 +54,3 @@
     name: rhel-7-server-rpms
     state: present
   when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
-
-- name: upgrade all packages
-  yum:
-    name: '*'
-    state: latest
-
-- name: Reboot immediately if there was a change.
-  shell: "sleep 5 && reboot"
-  async: 1
-  poll: 0
-  when: sshd_contents.changed
-
-
-
-- name: Wait for the reboot to complete if there was a change.
-  wait_for_connection:
-    connect_timeout: 20
-    sleep: 5
-    delay: 5
-    timeout: 300
-  when: sshd_contents.changed
