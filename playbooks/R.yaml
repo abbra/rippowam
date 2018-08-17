@@ -1,0 +1,37 @@
+---
+- hosts: R
+  become: yes
+  become_user: root
+  remote_user: "{{ cloud_user }}"
+  roles:
+    -  subscribe
+    -  update
+
+- hosts: R
+  #eventually this will be scoped only to eap hosts
+  #hosts: eap
+  become: yes
+  become_user: root
+  remote_user: "{{ cloud_user }}"
+  tasks:
+     - command: yum -y groupinstall 'Development Tools'
+     - name: Enable a RHSM repository
+       rhsm_repository:
+         name: rhel-7-server-optional-rpms
+         state: present
+       when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+     - yum:
+         name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+         state: present
+
+     - yum:
+         name: "{{ packages }}"
+       vars:
+         packages:
+           - libcurl-devel 
+           - openssl-devel 
+           - libxml2-devel
+           - R
+
+
