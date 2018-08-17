@@ -49,7 +49,7 @@
   os_server:
     cloud: "{{ cloudname }}"
     state: present
-    name: "{{ item.name }}.{{ clustername }}"
+    name: "{{ item.name }}"
     image: "{{ image_name }}"
     key_name: "{{ sshkeyname }}"
     timeout: 200
