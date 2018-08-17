@@ -43,7 +43,7 @@
   ignore_errors: yes
 
 
-- name: Enable a RHSM repository
+- name: Disable htb repository
   rhsm_repository:
     name: rhel-7-server-htb-rpms
     state: absent
