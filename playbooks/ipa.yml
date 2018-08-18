@@ -1,9 +1,9 @@
-- hosts: ipa
+- hosts: idm
   remote_user: "{{ cloud_user }}"
   tags: all
   tasks: []
 
-- hosts: ipa
+- hosts: idm
   sudo: yes
   remote_user: "{{ cloud_user }}"
   tags:
