@@ -1,21 +1,6 @@
-- hosts: localhost
-  vars:
-    teardown: false
-  roles:
-    -  openstack-inventory
-
-
-
 
 - hosts: tower
   sudo: yes
-  remote_user: "{{ cloud_user }}"
-  tags:
-    - ipa
   roles:
     - subscribe
-    - ipaclient
     - tower
-  vars:
-    hostname: "{{ ansible_fqdn }}"
-    ipa_admin_password: "{{ ipa_admin_user_password }}"

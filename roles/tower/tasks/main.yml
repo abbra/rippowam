@@ -1,0 +1,25 @@
+---
+
+#- name: copy setup program
+#  copy:
+#    dest: "/var/tmp/{{ tower_installer }}"
+
+- name: Extract installer
+  unarchive:
+    src: "{{ tower_installer_source }}"
+    dest: /var/tmp
+
+- name: Configure inventory
+  ini_file:
+    path: "/var/tmp/{{ tower_setup_version }}/inventory"
+    section: all:vars
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    backup: no
+  with_dict: { pg_password: Redhat1!, rabbitmq_password: 40b7a95c712b, admin_password: Redhat1!}
+
+
+- name: Run installer
+  become: true
+  command:  "/var/tmp/{{ tower_setup_version }}/setup.sh"
+    
