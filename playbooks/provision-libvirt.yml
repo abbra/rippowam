@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  vars:
+    teardown: false
+    teardown_network: false
+  roles:
+    -  provision/libvirt

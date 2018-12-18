@@ -1,0 +1,15 @@
+---
+- name: stop vm
+  virt:
+      name: "{{ item.name }}"
+      uri:  qemu:///session
+      state: destroyed
+  with_items: "{{ cluster_hosts }}"
+
+
+- name: delete vm
+  virt:
+      name: "{{ item.name }}"
+      command: undefine
+      uri:  qemu:///session
+  with_items: "{{ cluster_hosts }}"

@@ -1,0 +1,17 @@
+---
+- name: define vm
+  virt:
+      name: "{{ item.name }}"
+      command: define
+      xml: "{{ lookup('template', 'forretress.xml.j2') }}"
+      uri:  qemu:///session
+  with_items: "{{ cluster_hosts }}"
+
+- name: run vm
+  virt:
+      name: "{{ item.name }}"
+      uri:  qemu:///session
+      state: running
+  with_items: "{{ cluster_hosts }}"
+
+
