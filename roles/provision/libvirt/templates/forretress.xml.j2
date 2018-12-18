@@ -5,16 +5,18 @@
   <currentMemory unit='KiB'>4194304</currentMemory>
   <vcpu placement='static'>2</vcpu>
   <os>
-    <type arch='x86_64' machine='pc-i440fx-3.0'>hvm</type>
+    <type arch='x86_64' >hvm</type>
     <boot dev='hd'/>
   </os>
   <features>
     <acpi/>
     <apic/>
-    <vmport state='off'/>
   </features>
-  <cpu mode='custom' match='exact' check='partial'>
-    <model fallback='allow'>Skylake-Client-IBRS</model>
+  <cpu mode='custom' match='exact' check='full'>
+    <model fallback='forbid'>Nehalem-IBRS</model>
+    <feature policy='require' name='vme'/>
+    <feature policy='require' name='x2apic'/>
+    <feature policy='require' name='hypervisor'/>
   </cpu>
   <clock offset='utc'>
     <timer name='rtc' tickpolicy='catchup'/>
