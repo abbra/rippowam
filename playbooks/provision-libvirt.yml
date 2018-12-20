@@ -1,5 +1,5 @@
 ---
-- hosts: dialga
+- hosts: hypervisor
   become: no
   remote_user: root
   vars:

@@ -5,11 +5,18 @@
       uri:  qemu:///session
       state: destroyed
   with_items: "{{ cluster_hosts }}"
-
+  ignore_errors: yes
 
 - name: delete vm
   virt:
       name: "{{ item.name }}"
       command: undefine
       uri:  qemu:///session
+  with_items: "{{ cluster_hosts }}"
+  ignore_errors: yes
+
+- name: remove VM backing store
+  file:
+    path: "/var/lib/libvirt/images/{{ item.name }}.qcow2"
+    state: absent
   with_items: "{{ cluster_hosts }}"

@@ -1,4 +1,20 @@
 ---
+- name: copy vm image
+  copy:
+    src: /home/ayoung/Downloads/rhel-server-7.5-x86_64-kvm.qcow2
+    dest: /var/lib/libvirt/images/rhel-server-7.5-x86_64-kvm.qcow2
+    owner: qemu
+    group: qemu
+    mode: u=rw,g=r,o=r
+
+- name: 
+  copy: remote_src=True
+    src=/var/lib/libvirt/images/rhel-server-7.5-x86_64-kvm.qcow2
+    dest=/var/lib/libvirt/images/{{ item.name }}.qcow2
+  with_items: "{{ cluster_hosts }}"
+
+- meta: end_play
+
 - name: define vm
   virt:
       name: "{{ item.name }}"
