@@ -1,7 +1,7 @@
 ---
 - hosts: hypervisor
-  become: no
-  remote_user: root
+  become: yes
+  remote_user: cloud-user
   vars:
     teardown: false
     teardown_network: false

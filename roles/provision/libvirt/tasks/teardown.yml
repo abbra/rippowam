@@ -17,6 +17,6 @@
 
 - name: remove VM backing store
   file:
-    path: "/var/lib/libvirt/images/{{ item.name }}.qcow2"
+    path: "{{ target_image_dir }}/{{ item.name }}.qcow2"
     state: absent
   with_items: "{{ cluster_hosts }}"

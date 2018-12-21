@@ -1,5 +1,13 @@
 ---
-- name: copy vm image
+- name: install  libguestfs-tools-c
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: 
+    - libguestfs-tools-c
+    - libselinux-python
+
+- name: push base vm image to hypervisor
   copy:
     src:  "{{ source_image_dir }}/{{ source_image_file }}"
     dest: "{{ target_image_dir }}/{{ source_image_file }}"
@@ -7,10 +15,30 @@
     group: qemu
     mode: u=rw,g=r,o=r
 
-- name: 
+- name: push pubkey to hypervisor
+  copy:
+    src:  "{{ source_keystore_dir }}/{{ source_pubkey_file }}"
+    dest: "{{ hypervisor_keystore_dir }}/{{ target_pubkey_file }}"
+    owner: qemu
+    group: qemu
+    mode: u=rw,g=r,o=r
+
+- template:
+    src: ifcfg-eth1.j2
+    dest: '{{ hypervisor_keystore_dir }}/ifcfg-eth1'
+
+
+
+- name: create vm backing store from base vm image
   copy: remote_src=True
     src="{{ target_image_dir }}/{{ source_image_file }}"
-    dest="{{ target_image_dir }}//{{ item.name }}.qcow2"
+    dest="{{ target_image_dir }}/{{ item.name }}.qcow2"
+    force=no  # Do not recopy if it has been modified
+  with_items: "{{ cluster_hosts }}"
+
+
+- name: add cloud-user and keys
+  command:  virt-customize -a {{ target_image_dir }}/{{ item.name }}.qcow2 --run-command  'id -u cloud-user &>/dev/null || /usr/sbin/useradd -u 1000 cloud-user'  --ssh-inject cloud-user:file:/tmp/authorized_keys   --copy-in {{ hypervisor_keystore_dir }}/ifcfg-eth1:/etc/sysconfig/network-scripts  --selinux-relabel
   with_items: "{{ cluster_hosts }}"
 
 
