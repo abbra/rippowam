@@ -1,0 +1,8 @@
+- hosts: director
+  become: yes
+  remote_user: cloud-user
+  vars:
+    teardown: false
+    teardown_network: false
+  roles:
+    - tripleo

@@ -1,0 +1,89 @@
+---
+- name: Subscribe
+  redhat_subscription:
+    state: present
+    username: "{{ redhat_user }}"
+    password: "{{ redhat_password }}"
+    pool_ids: "{{ redhat_pool_id }}"
+  ignore_errors: no
+
+
+- name: Disable all RHSM repositories
+  rhsm_repository:
+    name: '*'
+    state: disabled
+
+- name: Enable OpenStack repositories 
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - rhel-7-server-rpms
+    - rhel-7-server-extras-rpms
+    - rhel-7-server-rh-common-rpms
+    - rhel-ha-for-rhel-7-server-rpms
+    - rhel-7-server-openstack-13-rpms
+
+
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+
+
+- name: install tripleoclient and ceph-ansible
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: 
+    - python-tripleoclient
+    - ceph-ansible
+    - screen
+
+- name: Add the 'stack' user
+  user:
+    name: stack
+    comment: stack installer
+
+
+- name: Set authorized key taken from file
+  authorized_key:
+    user: stack
+    state: present
+    key: "{{ lookup('file', '/home/ayoung/.ssh/id_rsa.pub') }}"
+
+- name: setup passwordless sudo for stack
+  copy:
+    src: sudoers
+    dest: /etc/sudoers.d/stack
+    owner: root
+    group: root
+    mode: 0440
+
+- name: undercloud.conf
+  copy:
+    src: undercloud.conf
+    dest: /home/stack
+    owner: stack
+    group: stack
+
+- name: stack directories
+  file:
+    path: /home/stack/{{ item }}
+    state: directory
+    owner: stack
+    group: stack
+
+  with_items: 
+    - images
+    - templates
+
+
+- name: hostname
+  hostname:
+    name: "{{ host_name }}.{{ cluster_domain }}"
+ 
+- name: add hostname entry into /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ static_ip_address }} {{ host_name }}.{{ cluster_domain }} {{ host_name }}"
