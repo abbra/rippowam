@@ -7,3 +7,22 @@
 
 - include_tasks: teardown_network.yml
   when: teardown_network
+
+
+- name: reset ssh keys for hostname
+  become: no
+  local_action: 
+    module: command ssh-keygen -R  {{ item.name }} 
+  with_items: "{{ cluster_hosts }}"
+
+- name: reset ssh keys for FQDN
+  become: no
+  local_action: 
+    module: command ssh-keygen -R  {{ item.name }}.{{ cluster_domain }} 
+  with_items: "{{ cluster_hosts }}"
+
+
+- name: reset ssh keys for ip address
+  become: no
+  local_action: 
+    module: command ssh-keygen -R  {{ static_ip_address }}
