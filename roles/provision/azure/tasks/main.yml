@@ -1,133 +1,94 @@
-- name: Create a resource group
-  azure_rm_resourcegroup:
-    name: "{{ az_resources }}"
-    location: "{{ az_location }}"
-    tags:
-        testing: testing
-        delete: never
+
+
+
+- name: login
+  command:  az login --service-principal --username {{ name }}  --password  {{ password  }}  --tenant {{ tenant }}
+
+
+- name: create resource group
+  command:  az group create --name {{ az_resources }}  \
+    --location {{ az_location }}
+
 
 - name: Create virtual network
-  azure_rm_virtualnetwork:
-    resource_group: "{{ az_resources }}"
-    name: "{{ az_network }}"
-    address_prefixes: "10.10.0.0/16"
+  command: az network vnet create \
+    --resource-group {{ az_resources }} \
+    --name "{{ az_network }}" \
+    --address-prefix 192.168.0.0/16 \
+    --subnet-name "{{ az_subnet }}" \
+    --subnet-prefix 192.168.1.0/24
 
-- name: Create storage account
-  azure_rm_storageaccount:
-    resource_group: "{{ az_resources }}"
-    name: "{{ az_storage }}"
-    account_type: Standard_LRS
 
-- name: Add subnet
-  azure_rm_subnet:
-    resource_group: "{{ az_resources }}"
-    name: "{{ az_subnet }}"
-    address_prefix: "10.10.0.0/24"
-    virtual_network: testvn001
-
-- name: Create public ip
-  azure_rm_publicipaddress:
-    resource_group: "{{ az_resources }}"
-    allocation_method: Static
-    name: publicip001
-
-- name: Create security group that allows SSH
-  azure_rm_securitygroup:
-    resource_group: "{{ az_resources }}"
-    name: "{{ az_sec_group }}"
-    rules:
-      - name: SSH
-        protocol: Tcp
-        destination_port_range: 22
-        access: Allow
-        priority: 101
-        direction: Inbound
-      - name: HTTP
-        protocol: Tcp
-        destination_port_range: 80
-        access: Allow
-        priority: 102
-        direction: Inbound
-      - name: HTTPS
-        protocol: Tcp
-        destination_port_range: 443
-        access: Allow
-        priority: 103
-        direction: Inbound
-
-- name: Create NIC
-  azure_rm_networkinterface:
-    resource_group: "{{ az_resources }}"
-    name: "{{ item.name }}.nic"
-    virtual_network: "{{ az_network }}"
-    subnet: "{{ az_subnet }}"
-    public_ip_name: "{{ item.name }}.publicip"
-    security_group: secgroup001
+- name: Create a public IP address
+  command: az network public-ip create \
+    --resource-group {{ az_resources }} \
+    --name "{{ item.name }}.publicip" \
+    --dns-name {{ item.name }}ayoung
   with_items: "{{ cluster_hosts }}"
 
+- name: Create a network security group
+  command: az network nsg create \
+   --resource-group {{ az_resources }} \
+   --name "{{ az_sec_group }}"
 
+- name: Allow SSH traffic
+  command: az network nsg rule create \
+    --resource-group {{ az_resources }} \
+    --nsg-name "{{ az_sec_group }}" \
+    --name "{{ az_sec_group }}SSH" \
+    --protocol tcp \
+    --priority 1000 \
+    --destination-port-range 22 \
+    --access allow
 
-- name: Create NIC
-  azure_rm_networkinterface:
-    resource_group: "{{ az_resources }}"
-    name: "{{ az_nic }}"
-    virtual_network: "{{ az_network }}"
-    subnet: "{{ az_subnet }}"
-    public_ip_name: publicip001
-    security_group: secgroup001
+- name: Allow HTTP traffic
+  command: az network nsg rule create \
+    --resource-group {{ az_resources }} \
+    --nsg-name "{{ az_sec_group }}" \
+    --name "{{ az_sec_group }}HTTP" \
+    --protocol tcp \
+    --priority 1001 \
+    --destination-port-range 80 \
+    --access allow
 
+- name: Allow HTTPS traffic
+  command: az network nsg rule create \
+    --resource-group {{ az_resources }} \
+    --nsg-name "{{ az_sec_group }}" \
+    --name "{{ az_sec_group }}HTTPS" \
+    --protocol tcp \
+    --priority 1002 \
+    --destination-port-range 443 \
+    --access allow
 
+- name: Create a Virtual NIC
+  command: az network nic create \
+    --resource-group {{ az_resources }} \
+    --name "{{ item.name }}.nic"
+    --vnet-name "{{ az_network }}" \
+    --subnet "{{ az_subnet }}" \
+    --public-ip-address "{{ item.name }}.publicip" \
+    --network-security-group "{{ az_sec_group }}"
+  with_items: "{{ cluster_hosts }}"
 
-- name: Create virtual machine
-  azure_rm_virtualmachine:
-    resource_group: "{{ az_resources }}"
-    name: "{{ item.name }}"
-    vm_size: Standard_D1
-    managed_disk_type: "Standard_LRS"
-    admin_username: "{{ az_username }}"
-    admin_password: "{{ az_password }}"
-    ssh_public_keys:  "{{ ayoung_publickey }}"
-    network_interfaces: "{{ item.name }}.nic"
-    image:
-      offer: RHEL
-      publisher: RedHat
-      sku: '7.3'
-      urn: 'RedHat:RHEL:7.3:latest'
-      version: '7.3.2017090723'
+- name: Create an availability set
+  command: az vm availability-set create \
+    --resource-group  {{ az_resources }} \
+    --name {{ az_av_set }}
+
+- name: create vm
+  command: az vm create \
+    -n {{ item.name }}  \
+    -g {{ az_resources }} \
+    --image RHEL  \
+    --availability-set {{ az_av_set }} \
+    --nics "{{ item.name }}.nic" \
+    --admin-username cloud-user \
+    --generate-ssh-keys
   with_items: "{{ cluster_hosts }}"
   register: osservers
 
-- name: Create CFME virtual machine
-  azure_rm_virtualmachine:
-    resource_group: "{{ az_resources }}"
-    name: CloudForms
-    vm_size: Standard_D1
-    admin_username: "{{ az_username }}"
-    admin_password: "{{ az_password }}"
-    network_interfaces: "{{ az_nic }}"
-    image:
-      name: cfme-azure-5.9.0.22-1      
-      resource_group: CFME-NE
-  when: True
- 
-- name: create additional volumes
-  azure_rm_managed_disk:    
-    name: "{{ item.volume_name }}"
-    location: eastus
-    resource_group: "{{ az_resources }}"
-    disk_size_gb: 40
-    managed_by: "{{ item.server_name }}"
-  register: cluster_volumes_attached
-  with_items: "{{ cluster_volumes }}"
 
 
-- name: create additional CFME volumes
-  azure_rm_managed_disk:    
-    name: CloudForms_var_volume
-    location: eastus
-    resource_group: "{{ az_resources }}"
-    disk_size_gb: 40
-    managed_by: CloudForms
-  when: True
-
-
+- name: logout
+  command:  az logout

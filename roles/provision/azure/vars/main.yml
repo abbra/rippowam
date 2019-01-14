@@ -1,4 +1,5 @@
 ---
+az_username: ayoung
 az_location: eastus
 az_resources: ayoung_resources
 az_storage: ayoung1storage
@@ -6,9 +7,8 @@ az_subnet: subnet001ay
 az_sec_group: secgroup001
 az_nic: aynic01
 az_network: testvn001
-az_username: ayoung
 az_password: e8f58a03-3fb6-4fa0-b7af-0F1A71A93605
-
+az_av_set: ayoung_av_set
 
 cluster_hosts:
   - {name: idm,    flavor:  m1.medium}
