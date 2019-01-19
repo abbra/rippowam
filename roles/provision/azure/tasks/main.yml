@@ -84,7 +84,7 @@
     --availability-set {{ az_av_set }} \
     --nics "{{ item.name }}.nic" \
     --admin-username cloud-user \
-    --generate-ssh-keys
+    --ssh-key-value "{{ pubkey }}"
   with_items: "{{ cluster_hosts }}"
   register: osservers
 

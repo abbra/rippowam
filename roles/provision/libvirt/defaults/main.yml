@@ -15,5 +15,6 @@ target_keystore_dir: /home/cloud-user/.ssh
 target_pubkey_file: authorized_keys
 
 
-ethernet_device: em1
+ethernet_device_1: em1
+ethernet_device_2: em2
 static_ip_address: 10.127.0.3

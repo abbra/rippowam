@@ -31,13 +31,14 @@
     state: latest
 
 
-- name: install tripleoclient and ceph-ansible
+- name: install tripleoclient
+# and ceph-ansible
   package:
     name: "{{ item }}"
     state: present
   with_items: 
     - python-tripleoclient
-    - ceph-ansible
+#    - ceph-ansible
     - screen
 
 - name: Add the 'stack' user
