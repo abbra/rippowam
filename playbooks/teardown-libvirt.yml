@@ -1,0 +1,7 @@
+---
+- hosts: hypervisor
+  become: yes
+  remote_user: cloud-user
+  roles:
+    -  teardown/libvirt
+

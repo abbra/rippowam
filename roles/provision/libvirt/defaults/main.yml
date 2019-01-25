@@ -8,6 +8,7 @@ source_image_file: rhel-server-7.5-x86_64-kvm.qcow2
 source_image_dir: /home/ayoung/Downloads
 target_image_dir: /var/lib/libvirt/images
 
+
 source_keystore_dir: /home/ayoung/.ssh
 source_pubkey_file: id_rsa.pub
 hypervisor_keystore_dir: /tmp
