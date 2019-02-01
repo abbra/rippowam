@@ -1,3 +1,38 @@
 ---
-- include: install.yml
-- include: setup.yml
+- name: Disable all RHSM repositories
+  rhsm_repository:
+    name: '*'
+    state: disabled
+
+- name: Enable Satellite repositories 
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - rhel-7-server-rpms
+    - rhel-server-rhscl-7-rpms
+    - rhel-7-server-satellite-6.4-rpms
+    - rhel-7-server-satellite-maintenance-6-rpms
+    - rhel-7-server-ansible-2.6-rpms
+
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+
+- name: upgrade all packages
+  yum:
+    name: satellite
+    state: latest
+
+- name: install and configure
+  command: satellite-installer --scenario satellite \
+    --foreman-admin-username admin \
+    --foreman-admin-password redhat \
+    --foreman-proxy-puppetca true \
+    --foreman-proxy-tftp true \
+    --enable-foreman-plugin-discovery
+
+
+
+#- include: setup.yml

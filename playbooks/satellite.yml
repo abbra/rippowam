@@ -6,11 +6,5 @@
   tags:
     - satellite
   roles:
-    - common
-    - ipaclient
+    - subscribe
     - satelliteserver
-  vars:
-    hostname: "{{ ansible_fqdn }}"
-    dns_search: "{{ ipa_domain }}"
-    ipa_admin_password: "{{ipa_admin_user_password }}"
-
