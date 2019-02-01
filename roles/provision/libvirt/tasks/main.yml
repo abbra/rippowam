@@ -39,11 +39,12 @@
 
 - name: Ensure the backing store is large enough
   command: qemu-img resize "{{ target_image_dir }}/{{ item.name }}.qcow2"  30G
+  with_items: "{{ cluster_hosts }}"
 
 - name: Grow the partition
-  command: "virt-resize  --expand /dev/sda1 {{ target_image_dir }}/{{ source_image_file }} {{ target_image_dir }}/{{ item.name }}.qcow"
+  command: "virt-resize  --expand /dev/sda1 {{ target_image_dir }}/{{ source_image_file }} {{ target_image_dir }}/{{ item.name }}.qcow2"
+  with_items: "{{ cluster_hosts }}"
 
-- meta: end_play
 
 - name: add cloud-user and keys
   command:  virt-customize -a {{ target_image_dir }}/{{ item.name }}.qcow2 --run-command  'id -u cloud-user &>/dev/null || /usr/sbin/useradd -u 1000 cloud-user'  --ssh-inject cloud-user:file:/tmp/authorized_keys   --hostname {{ item.name }}.{{ cluster_domain }}  --copy-in {{ hypervisor_keystore_dir }}/ifcfg-eth1:/etc/sysconfig/network-scripts --copy-in {{ hypervisor_keystore_dir }}/ifcfg-eth2:/etc/sysconfig/network-scripts  --selinux-relabel --root-password password:FreeIPA4All
