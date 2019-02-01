@@ -1,15 +1,20 @@
 ---
+
 - os_server_facts:
     cloud: "{{ cloudname }}"
     server: "{{ item.name }}.{{ clustername }}"
   with_items: "{{ cluster_hosts  }}"
   register: os_servers
 
-- os_server:
-    cloud: "{{ cloudname }}"
+- debug:
+    var:  os_servers
+
+- lineinfile:
+    path: "{{ ssh_config_path }}"
+    line:  "  Hostname {{ item.ansible_facts.openstack_servers.0.interface_ip  }}"
     state: absent
-    name: "{{ item.name }}.{{ clustername }}"
-  with_items: "{{ cluster_hosts  }}"
+  with_items: "{{ os_servers.results }}"
+  ignore_errors: yes
 
 - os_server_facts:
     cloud: "{{ cloudname }}"
@@ -31,6 +36,11 @@
     display_name: cfme_db_volume
     state: absent
 
+- os_server:
+    cloud: "{{ cloudname }}"
+    state: absent
+    name: "{{ item.name }}.{{ clustername }}"
+  with_items: "{{ cluster_hosts  }}"
 
 - os_volume:
     cloud: "{{ cloudname }}"
