@@ -9,13 +9,6 @@
 - debug:
     var:  os_servers
 
-- lineinfile:
-    path: "{{ ssh_config_path }}"
-    line:  "  Hostname {{ item.ansible_facts.openstack_servers.0.interface_ip  }}"
-    state: absent
-  with_items: "{{ os_servers.results }}"
-  ignore_errors: yes
-
 - os_server_facts:
     cloud: "{{ cloudname }}"
     server: "cfme.{{ clustername }}"
