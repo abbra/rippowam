@@ -1,0 +1,16 @@
+cat ~/ipmi.json
+[
+    {
+        "description": "Set default IPMI credentials",
+        "conditions": [
+            {"op": "eq", "field": "data://auto_discovered", "value": true}
+        ],
+        "actions": [
+            {"action": "set-attribute", "path": "driver_info/ipmi_username",
+             "value": "root"},
+            {"action": "set-attribute", "path": "driver_info/ipmi_password",
+             "value": "{{ password }}"}
+        ]
+    }
+]
+

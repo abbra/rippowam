@@ -31,8 +31,7 @@
     state: latest
 
 
-- name: install tripleoclient
-# and ceph-ansible
+- name: install openstack packages
   package:
     name: "{{ item }}"
     state: present
@@ -40,6 +39,7 @@
     - python-tripleoclient
 #    - ceph-ansible
     - screen
+    - python-novajoin
 
 - name: Add the 'stack' user
   user:
@@ -88,3 +88,17 @@
   lineinfile:
     path: /etc/hosts
     line: "{{ static_ip_address }} {{ host_name }}.{{ cluster_domain }} {{ host_name }}"
+
+
+
+
+
+
+#In /etc/sysconfig/docker    make sure INSECURE_REGISTRY reads 
+#INSECURE_REGISTRY="--insecure-registry 10.127.0.1:8787 --insecure-registry passimian.home.younglogic.net:8787 --insecure-registry 10.127.0.3:8787"
+
+# systemctl restart docker:wq
+
+
+
+#   48  sudo openstack overcloud container image upload   --config-file  /home/stack/local_registry_images.yaml   --verbose
