@@ -20,3 +20,19 @@
     path: "{{ target_image_dir }}/{{ item.name }}.qcow2"
     state: absent
   with_items: "{{ cluster_hosts }}"
+
+- name: destroy macvtap networks
+  virt_net:
+    command: destroy
+    name: "macvtap-{{ item.cluster_host }}-{{ item.device }}"
+  with_items: "{{ macvtap_networks }}"
+  ignore_errors: yes
+
+
+- name: undefine macvtap networks
+  virt_net:
+    command: undefine
+    name: "macvtap-{{ item.cluster_host }}-{{ item.device }}"
+  with_items: "{{ macvtap_networks }}"
+  ignore_errors: yes
+

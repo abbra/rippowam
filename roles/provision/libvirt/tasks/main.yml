@@ -59,12 +59,45 @@
       uri:  qemu:///session
   with_items: "{{ cluster_hosts }}"
 
+- name: define macvtap networks
+  virt_net:
+    command: define
+    name: "macvtap-{{ item.cluster_host }}-{{ item.device }}"
+    xml: '{{ lookup("template", "macvtap.xml.j2") }}'
+  with_items: "{{ macvtap_networks }}"
+
+- name: define macvtap networks
+  virt_net:
+    name: "macvtap-{{ item.cluster_host }}-{{ item.device }}"
+    autostart: yes
+  with_items: "{{ macvtap_networks }}"
+
+
+- name: start macvtap networks
+  virt_net:
+    name: "macvtap-{{ item.cluster_host }}-{{ item.device }}"
+    state: active
+    autostart: yes
+    xml: '{{ lookup("template", "macvtap.xml.j2") }}'
+  with_items: "{{ macvtap_networks }}"
+
+
 - name: run vm
   virt:
       name: "{{ item.name }}"
       uri:  qemu:///session
       state: running
   with_items: "{{ cluster_hosts }}"
+
+- name:  add macvtap interfaces
+  command: virsh --connect  qemu:///session  attach-interface   \
+    --domain {{ item.cluster_host }}.home.younglogic.net \
+    --type network   \
+    --source macvtap-{{ item.cluster_host }}-{{ item.device }}  \
+    --model virtio   --config --live
+  with_items: "{{ macvtap_networks }}"
+
+
 
 - name: reset ssh keys for hostname
   become: no

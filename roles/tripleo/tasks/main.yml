@@ -1,4 +1,5 @@
 ---
+
 - name: Subscribe
   redhat_subscription:
     state: present

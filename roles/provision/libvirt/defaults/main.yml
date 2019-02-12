@@ -2,6 +2,12 @@
 cluster_hosts:
   - {name: passimian }
 
+
+macvtap_networks:
+  - {cluster_host: passimian, device: em1 }
+  - {cluster_host: passimian, device: em2 }
+
+
 cluster_domain: home.younglogic.net
 
 source_image_file: rhel-server-7.5-x86_64-kvm.qcow2

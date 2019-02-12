@@ -1,0 +1,6 @@
+<network>
+  <name>macvtap-{{ item.cluster_host }}-{{ item.device }}</name>
+  <forward mode="bridge">
+    <interface dev="{{ item.device }}"/>
+  </forward>
+</network>
